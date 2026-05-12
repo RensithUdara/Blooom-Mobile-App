@@ -47,8 +47,11 @@ class _StartupPageState extends State<StartupPage> {
         if (!vm.profile.onboardingCompleted) {
           return const OnboardingPage();
         }
-        if (vm.profile.appLockEnabled && !vm.isAppUnlocked) {
-          return const AppLockPage();
+        if (vm.profile.usesDeviceLock && !vm.isAppUnlocked) {
+          return const DeviceLockPage();
+        }
+        if (vm.profile.usesPinLock && !vm.isAppUnlocked) {
+          return const PinUnlockPage();
         }
         return const HomeShellPage();
       },
@@ -107,8 +110,32 @@ class SplashPage extends StatelessWidget {
   }
 }
 
-class AppLockPage extends StatelessWidget {
-  const AppLockPage({super.key});
+class DeviceLockPage extends StatefulWidget {
+  const DeviceLockPage({super.key});
+
+  @override
+  State<DeviceLockPage> createState() => _DeviceLockPageState();
+}
+
+class _DeviceLockPageState extends State<DeviceLockPage> {
+  bool _authStarted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_authStarted) return;
+    _authStarted = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _unlock());
+  }
+
+  Future<void> _unlock() async {
+    final unlocked = await AppScope.of(context).authenticateAppLock();
+    if (!unlocked && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not unlock Blooom.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,16 +188,7 @@ class AppLockPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () async {
-                      final unlocked = await vm.authenticateAppLock();
-                      if (!unlocked && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Could not unlock Blooom.'),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _unlock,
                     icon: const Icon(Icons.lock_open),
                     label: const Text('Unlock'),
                   ),
@@ -181,5 +199,97 @@ class AppLockPage extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class PinUnlockPage extends StatefulWidget {
+  const PinUnlockPage({super.key});
+
+  @override
+  State<PinUnlockPage> createState() => _PinUnlockPageState();
+}
+
+class _PinUnlockPageState extends State<PinUnlockPage> {
+  final _pinController = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(AppConstants.logoAsset, width: 110, height: 110),
+                const SizedBox(height: 24),
+                Text(
+                  'Enter PIN',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Unlock Blooom to view your private health data.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: _pinController,
+                  autofocus: true,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    labelText: 'Blooom PIN',
+                    errorText: _error,
+                    counterText: '',
+                  ),
+                  onSubmitted: (_) => _unlockWithPin(),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _unlockWithPin,
+                    icon: const Icon(Icons.lock_open),
+                    label: const Text('Unlock'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _unlockWithPin() async {
+    final pin = _pinController.text.trim();
+    if (pin.length < 4) {
+      setState(() => _error = 'Enter your PIN.');
+      return;
+    }
+
+    final unlocked = await AppScope.of(context).unlockWithPin(pin);
+    if (!unlocked && mounted) {
+      setState(() => _error = 'Incorrect PIN.');
+      _pinController.clear();
+    }
   }
 }
