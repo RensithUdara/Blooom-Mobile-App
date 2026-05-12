@@ -55,34 +55,34 @@ class _HomeShellPageState extends State<HomeShellPage> {
                   child: vm.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : isWide
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 1510),
-                              child: Row(
-                                children: [
-                                  _DesktopSideNav(
-                                    items: _items,
-                                    selectedIndex: vm.selectedTab,
-                                    onSelected: (index) =>
-                                        _selectTab(vm, index),
-                                  ),
-                                  const SizedBox(width: 24),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: _AnimatedPageSwitcher(
-                                        selectedTab: vm.selectedTab,
-                                        previousTab: _previousTab,
-                                        child: _pages[vm.selectedTab],
-                                      ),
+                      ? Row(
+                          children: [
+                            _DesktopSideNav(
+                              items: _items,
+                              selectedIndex: vm.selectedTab,
+                              onSelected: (index) => _selectTab(vm, index),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 1180,
+                                    ),
+                                    child: _AnimatedPageSwitcher(
+                                      selectedTab: vm.selectedTab,
+                                      previousTab: _previousTab,
+                                      child: _pages[vm.selectedTab],
                                     ),
                                   ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         )
                       : Align(
                           alignment: Alignment.topCenter,
@@ -178,7 +178,7 @@ class _DesktopSideNav extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       width: 248,
-      margin: const EdgeInsets.symmetric(vertical: 18),
+      margin: const EdgeInsets.fromLTRB(18, 18, 0, 18),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.90),
