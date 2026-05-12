@@ -71,19 +71,41 @@ class DatabaseService {
     int newVersion,
   ) async {
     if (oldVersion < 2) {
-      await db.execute(
-        'ALTER TABLE profile_settings ADD COLUMN birth_date TEXT',
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'birth_date',
+        definition: 'birth_date TEXT',
       );
     }
     if (oldVersion < 3) {
-      await db.execute(
-        'ALTER TABLE profile_settings ADD COLUMN onboarding_completed INTEGER NOT NULL DEFAULT 0',
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'onboarding_completed',
+        definition: 'onboarding_completed INTEGER NOT NULL DEFAULT 0',
       );
     }
     if (oldVersion < 4) {
-      await db.execute(
-        'ALTER TABLE profile_settings ADD COLUMN app_lock_enabled INTEGER NOT NULL DEFAULT 0',
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'app_lock_enabled',
+        definition: 'app_lock_enabled INTEGER NOT NULL DEFAULT 0',
       );
+    }
+  }
+
+  Future<void> _addColumnIfMissing(
+    Database db, {
+    required String table,
+    required String column,
+    required String definition,
+  }) async {
+    final columns = await db.rawQuery('PRAGMA table_info($table)');
+    final exists = columns.any((row) => row['name'] == column);
+    if (!exists) {
+      await db.execute('ALTER TABLE $table ADD COLUMN $definition');
     }
   }
 }
