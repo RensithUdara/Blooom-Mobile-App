@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
-import '../presentation/pages/home_shell_page.dart';
+import '../presentation/pages/startup_page.dart';
 import '../presentation/viewmodels/app_scope.dart';
 import '../presentation/viewmodels/app_view_model.dart';
 
@@ -23,7 +23,7 @@ class BlooomApp extends StatelessWidget {
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: viewModel.themeMode,
-            home: const HomeShellPage(),
+            home: const StartupPage(),
           );
         },
       ),
