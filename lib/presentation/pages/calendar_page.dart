@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
 import '../widgets/calendar/month_cycle_calendar.dart';
+import '../widgets/common/animated_content.dart';
 import '../widgets/common/soft_card.dart';
 import 'log_period_sheet.dart';
 
@@ -16,10 +17,12 @@ class CalendarPage extends StatelessWidget {
       animation: vm,
       builder: (context, _) {
         final month = DateTime.now();
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        return AnimatedPageList(
           children: [
-            Text('Calendar', style: Theme.of(context).textTheme.headlineSmall),
+            const SectionHeader(
+              title: 'Calendar',
+              subtitle: 'Period, fertile window and ovulation predictions',
+            ),
             const SizedBox(height: 14),
             SoftCard(
               child: Column(
@@ -44,14 +47,30 @@ class CalendarPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SoftCard(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: Text(
-                'Your period is likely to start on or around '
-                '${BloomDateUtils.full(vm.nextPeriodStart)}.',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w800,
-                ),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primaryContainer,
+                  Theme.of(context).colorScheme.secondaryContainer,
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.auto_awesome,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Your period is likely to start on or around '
+                      '${BloomDateUtils.full(vm.nextPeriodStart)}.',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 14),
