@@ -7,7 +7,8 @@ class ProfileSettings {
     this.remindersEnabled = true,
     this.darkMode = false,
     this.onboardingCompleted = false,
-    this.appLockEnabled = false,
+    this.lockMethod = 'none',
+    this.appPinHash,
   });
 
   final String name;
@@ -17,7 +18,12 @@ class ProfileSettings {
   final bool remindersEnabled;
   final bool darkMode;
   final bool onboardingCompleted;
-  final bool appLockEnabled;
+  final String lockMethod;
+  final String? appPinHash;
+
+  bool get appLockEnabled => lockMethod != 'none';
+  bool get usesDeviceLock => lockMethod == 'device';
+  bool get usesPinLock => lockMethod == 'pin';
 
   int? get age {
     final birthday = birthDate;
@@ -41,7 +47,9 @@ class ProfileSettings {
     bool? remindersEnabled,
     bool? darkMode,
     bool? onboardingCompleted,
-    bool? appLockEnabled,
+    String? lockMethod,
+    String? appPinHash,
+    bool clearPinHash = false,
   }) {
     return ProfileSettings(
       name: name ?? this.name,
@@ -51,7 +59,8 @@ class ProfileSettings {
       remindersEnabled: remindersEnabled ?? this.remindersEnabled,
       darkMode: darkMode ?? this.darkMode,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
-      appLockEnabled: appLockEnabled ?? this.appLockEnabled,
+      lockMethod: lockMethod ?? this.lockMethod,
+      appPinHash: clearPinHash ? null : appPinHash ?? this.appPinHash,
     );
   }
 
@@ -66,6 +75,8 @@ class ProfileSettings {
       'dark_mode': darkMode ? 1 : 0,
       'onboarding_completed': onboardingCompleted ? 1 : 0,
       'app_lock_enabled': appLockEnabled ? 1 : 0,
+      'lock_method': lockMethod,
+      'app_pin_hash': appPinHash,
     };
   }
 
@@ -81,7 +92,10 @@ class ProfileSettings {
       remindersEnabled: (map['reminders_enabled'] as int? ?? 1) == 1,
       darkMode: (map['dark_mode'] as int? ?? 0) == 1,
       onboardingCompleted: (map['onboarding_completed'] as int? ?? 0) == 1,
-      appLockEnabled: (map['app_lock_enabled'] as int? ?? 0) == 1,
+      lockMethod:
+          map['lock_method'] as String? ??
+          ((map['app_lock_enabled'] as int? ?? 0) == 1 ? 'device' : 'none'),
+      appPinHash: map['app_pin_hash'] as String?,
     );
   }
 }
