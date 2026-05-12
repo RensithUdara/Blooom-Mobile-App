@@ -7,6 +7,7 @@ class ProfileSettings {
     this.remindersEnabled = true,
     this.darkMode = false,
     this.onboardingCompleted = false,
+    this.appLockEnabled = false,
   });
 
   final String name;
@@ -16,6 +17,7 @@ class ProfileSettings {
   final bool remindersEnabled;
   final bool darkMode;
   final bool onboardingCompleted;
+  final bool appLockEnabled;
 
   int? get age {
     final birthday = birthDate;
@@ -39,6 +41,7 @@ class ProfileSettings {
     bool? remindersEnabled,
     bool? darkMode,
     bool? onboardingCompleted,
+    bool? appLockEnabled,
   }) {
     return ProfileSettings(
       name: name ?? this.name,
@@ -48,6 +51,7 @@ class ProfileSettings {
       remindersEnabled: remindersEnabled ?? this.remindersEnabled,
       darkMode: darkMode ?? this.darkMode,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      appLockEnabled: appLockEnabled ?? this.appLockEnabled,
     );
   }
 
@@ -61,6 +65,7 @@ class ProfileSettings {
       'reminders_enabled': remindersEnabled ? 1 : 0,
       'dark_mode': darkMode ? 1 : 0,
       'onboarding_completed': onboardingCompleted ? 1 : 0,
+      'app_lock_enabled': appLockEnabled ? 1 : 0,
     };
   }
 
@@ -76,6 +81,7 @@ class ProfileSettings {
       remindersEnabled: (map['reminders_enabled'] as int? ?? 1) == 1,
       darkMode: (map['dark_mode'] as int? ?? 0) == 1,
       onboardingCompleted: (map['onboarding_completed'] as int? ?? 0) == 1,
+      appLockEnabled: (map['app_lock_enabled'] as int? ?? 0) == 1,
     );
   }
 }
