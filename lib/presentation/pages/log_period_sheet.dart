@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/adaptive_modal.dart';
 
 Future<void> showLogPeriodSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showAdaptiveModal<void>(
     context: context,
     isScrollControlled: true,
-    useSafeArea: true,
+    webMaxWidth: 640,
     builder: (_) => const _LogPeriodSheet(),
   );
 }
