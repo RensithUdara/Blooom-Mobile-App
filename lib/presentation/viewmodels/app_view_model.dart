@@ -7,6 +7,7 @@ import '../../data/models/period_entry.dart';
 import '../../data/models/profile_settings.dart';
 import '../../data/models/wellness_log.dart';
 import '../../data/repositories/tracker_repository.dart';
+import '../../data/services/auth_service.dart';
 import '../../data/services/calendar_service.dart';
 import '../../data/services/notification_service.dart';
 
@@ -15,18 +16,22 @@ class AppViewModel extends ChangeNotifier {
     required TrackerRepository repository,
     required NotificationService notificationService,
     required CalendarService calendarService,
+    required AuthService authService,
   }) : _repository = repository,
        _notificationService = notificationService,
-       _calendarService = calendarService;
+       _calendarService = calendarService,
+       _authService = authService;
 
   final TrackerRepository _repository;
   final NotificationService _notificationService;
   final CalendarService _calendarService;
+  final AuthService _authService;
 
   List<PeriodEntry> periods = const [];
   List<WellnessLog> wellnessLogs = const [];
   ProfileSettings profile = const ProfileSettings();
   bool isLoading = true;
+  bool isAppUnlocked = false;
   int selectedTab = 0;
 
   ThemeMode get themeMode =>
@@ -155,12 +160,22 @@ class AppViewModel extends ChangeNotifier {
   Future<void> initialize() async {
     isLoading = true;
     notifyListeners();
-    profile = await _repository.getProfile();
-    periods = await _repository.getPeriods();
-    wellnessLogs = await _repository.getWellnessLogs();
+    await _loadData();
     isLoading = false;
     await _syncReminders();
     notifyListeners();
+  }
+
+  Future<void> _refreshData() async {
+    await _loadData();
+    await _syncReminders();
+    notifyListeners();
+  }
+
+  Future<void> _loadData() async {
+    profile = await _repository.getProfile();
+    periods = await _repository.getPeriods();
+    wellnessLogs = await _repository.getWellnessLogs();
   }
 
   Future<void> addPeriod({
@@ -177,17 +192,17 @@ class AppViewModel extends ChangeNotifier {
         notes: notes,
       ),
     );
-    await initialize();
+    await _refreshData();
   }
 
   Future<void> addWellnessLog(WellnessLog log) async {
     await _repository.addWellnessLog(log);
-    await initialize();
+    await _refreshData();
   }
 
   Future<void> deletePeriod(int id) async {
     await _repository.deletePeriod(id);
-    await initialize();
+    await _refreshData();
   }
 
   void setTab(int index) {
@@ -199,6 +214,35 @@ class AppViewModel extends ChangeNotifier {
     profile = profile.copyWith(darkMode: enabled);
     await _repository.saveProfile(profile);
     notifyListeners();
+  }
+
+  Future<bool> authenticateAppLock() async {
+    final unlocked = await _authService.authenticate();
+    isAppUnlocked = unlocked;
+    notifyListeners();
+    return unlocked;
+  }
+
+  Future<bool> toggleAppLock(bool enabled) async {
+    if (!enabled) {
+      profile = profile.copyWith(appLockEnabled: false);
+      isAppUnlocked = false;
+      await _repository.saveProfile(profile);
+      notifyListeners();
+      return true;
+    }
+
+    final supported = await _authService.isDeviceLockAvailable();
+    if (!supported) return false;
+
+    final authenticated = await _authService.authenticate();
+    if (!authenticated) return false;
+
+    profile = profile.copyWith(appLockEnabled: true);
+    isAppUnlocked = true;
+    await _repository.saveProfile(profile);
+    notifyListeners();
+    return true;
   }
 
   Future<void> updateProfile({
