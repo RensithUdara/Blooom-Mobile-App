@@ -16,150 +16,195 @@ class SettingsPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return AnimatedPageList(
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  Hero(
-                    tag: 'blooom-logo',
-                    child: Image.asset(
-                      AppConstants.logoAsset,
-                      width: 92,
-                      height: 92,
-                    ),
-                  ),
-                  Text(
-                    vm.profile.name.trim().isEmpty
-                        ? AppConstants.appName
-                        : vm.profile.name,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  Text(
-                    vm.profile.birthDate == null
-                        ? AppConstants.tagline
-                        : '${BloomDateUtils.full(vm.profile.birthDate!)}'
-                              '${vm.profile.age == null ? '' : '  |  ${vm.profile.age} years'}',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            SoftCard(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.surface,
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
-                ],
-              ),
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.badge_outlined),
-                title: const Text('Personal details'),
-                subtitle: Text(
-                  [
-                        if (vm.profile.name.trim().isNotEmpty) vm.profile.name,
-                        if (vm.profile.birthDate != null)
-                          BloomDateUtils.full(vm.profile.birthDate!),
-                      ].isEmpty
-                      ? 'Add name and birthday'
-                      : [
-                          if (vm.profile.name.trim().isNotEmpty)
-                            vm.profile.name,
-                          if (vm.profile.birthDate != null)
-                            BloomDateUtils.full(vm.profile.birthDate!),
-                        ].join('  |  '),
+        final profileHero = Center(
+          child: Column(
+            children: [
+              Hero(
+                tag: 'blooom-logo',
+                child: Image.asset(
+                  AppConstants.logoAsset,
+                  width: 92,
+                  height: 92,
                 ),
-                trailing: const Icon(Icons.edit_outlined),
-                onTap: () => _showEditProfileSheet(context),
               ),
+              Text(
+                vm.profile.name.trim().isEmpty
+                    ? AppConstants.appName
+                    : vm.profile.name,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              Text(
+                vm.profile.birthDate == null
+                    ? AppConstants.tagline
+                    : '${BloomDateUtils.full(vm.profile.birthDate!)}'
+                          '${vm.profile.age == null ? '' : '  |  ${vm.profile.age} years'}',
+              ),
+            ],
+          ),
+        );
+        final personalCard = SoftCard(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.badge_outlined),
+            title: const Text('Personal details'),
+            subtitle: Text(
+              [
+                    if (vm.profile.name.trim().isNotEmpty) vm.profile.name,
+                    if (vm.profile.birthDate != null)
+                      BloomDateUtils.full(vm.profile.birthDate!),
+                  ].isEmpty
+                  ? 'Add name and birthday'
+                  : [
+                      if (vm.profile.name.trim().isNotEmpty) vm.profile.name,
+                      if (vm.profile.birthDate != null)
+                        BloomDateUtils.full(vm.profile.birthDate!),
+                    ].join('  |  '),
             ),
-            const SizedBox(height: 14),
-            SoftCard(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.surface,
-                  Theme.of(
-                    context,
-                  ).colorScheme.secondary.withValues(alpha: 0.08),
-                ],
-              ),
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Dark theme'),
-                    subtitle: const Text('Rose night mode for low light'),
-                    value: vm.profile.darkMode,
-                    onChanged: vm.toggleDarkMode,
-                  ),
-                  const Divider(),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('In-app notifications'),
-                    subtitle: const Text(
-                      'Predicted period reminders on this device',
-                    ),
-                    value: vm.profile.remindersEnabled,
-                    onChanged: vm.toggleReminders,
-                  ),
-                  const Divider(),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('App lock'),
-                    subtitle: Text(
-                      vm.profile.usesPinLock
-                          ? 'PIN is required before opening Blooom'
-                          : vm.profile.usesDeviceLock
-                          ? 'Device lock or biometrics are required'
-                          : 'Add Face ID, fingerprint, device lock, or PIN',
-                    ),
-                    value: vm.profile.appLockEnabled,
-                    onChanged: (enabled) async {
-                      if (enabled) {
-                        await _showAppLockSetupSheet(context);
-                      } else {
-                        await vm.disableAppLock();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('App lock disabled.')),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            SoftCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Privacy',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Your cycle, mood, symptom, sleep, weight, temperature and intimacy details stay private on this device.',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            SoftCard(
-              child: ListTile(
+            trailing: const Icon(Icons.edit_outlined),
+            onTap: () => _showEditProfileSheet(context),
+          ),
+        );
+        final preferencesCard = SoftCard(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
+            ],
+          ),
+          child: Column(
+            children: [
+              SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Add predicted period to Google Calendar'),
-                subtitle: Text(BloomDateUtils.full(vm.nextPeriodStart)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => exportNextPeriodToCalendar(context),
+                title: const Text('Dark theme'),
+                subtitle: const Text('Rose night mode for low light'),
+                value: vm.profile.darkMode,
+                onChanged: vm.toggleDarkMode,
               ),
+              const Divider(),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('In-app notifications'),
+                subtitle: const Text(
+                  'Predicted period reminders on this device',
+                ),
+                value: vm.profile.remindersEnabled,
+                onChanged: vm.toggleReminders,
+              ),
+              const Divider(),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('App lock'),
+                subtitle: Text(
+                  vm.profile.usesPinLock
+                      ? 'PIN is required before opening Blooom'
+                      : vm.profile.usesDeviceLock
+                      ? 'Device lock or biometrics are required'
+                      : 'Add Face ID, fingerprint, device lock, or PIN',
+                ),
+                value: vm.profile.appLockEnabled,
+                onChanged: (enabled) async {
+                  if (enabled) {
+                    await _showAppLockSetupSheet(context);
+                  } else {
+                    await vm.disableAppLock();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('App lock disabled.')),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+        final privacyCard = SoftCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Privacy', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              const Text(
+                'Your cycle, mood, symptom, sleep, weight, temperature and intimacy details stay private on this device.',
+              ),
+            ],
+          ),
+        );
+        final calendarCard = SoftCard(
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Add predicted period to Google Calendar'),
+            subtitle: Text(BloomDateUtils.full(vm.nextPeriodStart)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => exportNextPeriodToCalendar(context),
+          ),
+        );
+        return AnimatedPageList(
+          padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final details = Column(
+                  children: [
+                    personalCard,
+                    const SizedBox(height: 14),
+                    privacyCard,
+                    const SizedBox(height: 14),
+                    calendarCard,
+                  ],
+                );
+                final preferences = Column(children: [preferencesCard]);
+
+                if (constraints.maxWidth < 900) {
+                  return Column(
+                    children: [
+                      profileHero,
+                      const SizedBox(height: 20),
+                      details,
+                      const SizedBox(height: 14),
+                      preferences,
+                    ],
+                  );
+                }
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 320,
+                      child: Column(
+                        children: [
+                          SoftCard(child: profileHero),
+                          const SizedBox(height: 14),
+                          privacyCard,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          personalCard,
+                          const SizedBox(height: 14),
+                          preferencesCard,
+                          const SizedBox(height: 14),
+                          calendarCard,
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         );
