@@ -61,6 +61,30 @@ class AppTheme {
           borderSide: BorderSide.none,
         ),
       ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        showDragHandle: true,
+        backgroundColor: scheme.surface,
+        modalBackgroundColor: scheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+      ),
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
         indicatorColor: scheme.primary.withValues(alpha: 0.16),
