@@ -71,7 +71,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     itemCount: _items.length,
                     onPageChanged: (value) => setState(() => _index = value),
                     itemBuilder: (context, index) {
-                      return _OnboardingSlide(item: _items[index]);
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        child: _OnboardingSlide(
+                          key: ValueKey(_items[index].title),
+                          item: _items[index],
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -122,7 +128,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class _OnboardingSlide extends StatelessWidget {
-  const _OnboardingSlide({required this.item});
+  const _OnboardingSlide({super.key, required this.item});
 
   final _OnboardingItem item;
 
@@ -132,57 +138,83 @@ class _OnboardingSlide extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 232,
-          height: 232,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withValues(alpha: 0.88),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.primary.withValues(alpha: 0.16),
-                blurRadius: 34,
-                offset: const Offset(0, 18),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned(
-                top: 36,
-                child: Image.asset(
-                  AppConstants.logoAsset,
-                  width: 74,
-                  height: 74,
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.92, end: 1),
+          duration: const Duration(milliseconds: 520),
+          curve: Curves.easeOutBack,
+          builder: (context, scale, child) {
+            return Transform.scale(scale: scale, child: child);
+          },
+          child: Container(
+            width: 232,
+            height: 232,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface.withValues(alpha: 0.88),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.16),
+                  blurRadius: 34,
+                  offset: const Offset(0, 18),
                 ),
-              ),
-              Positioned(
-                bottom: 44,
-                child: Icon(
-                  item.icon,
-                  size: 82,
-                  color: theme.colorScheme.primary,
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  top: 36,
+                  child: Image.asset(
+                    AppConstants.logoAsset,
+                    width: 74,
+                    height: 74,
+                  ),
                 ),
-              ),
-            ],
+                Positioned(
+                  bottom: 44,
+                  child: Icon(
+                    item.icon,
+                    size: 82,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 42),
-        Text(
-          item.title,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          item.body,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            height: 1.45,
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 460),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 14 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: Column(
+            children: [
+              Text(
+                item.title,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                item.body,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
+              ),
+            ],
           ),
         ),
       ],
