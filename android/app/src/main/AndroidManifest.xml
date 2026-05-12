@@ -4,7 +4,7 @@
     <application
         android:label="Blooom"
         android:name="${applicationName}"
-        android:icon="@drawable/app_logo">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
