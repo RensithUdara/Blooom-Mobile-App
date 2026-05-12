@@ -19,13 +19,10 @@ class MonthCycleCalendar extends StatelessWidget {
     final first = DateTime(month.year, month.month);
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final leading = first.weekday % 7;
-    final cells = List<DateTime?>.generate(
-      leading + daysInMonth,
-      (index) {
-        if (index < leading) return null;
-        return DateTime(month.year, month.month, index - leading + 1);
-      },
-    );
+    final cells = List<DateTime?>.generate(leading + daysInMonth, (index) {
+      if (index < leading) return null;
+      return DateTime(month.year, month.month, index - leading + 1);
+    });
 
     return Column(
       children: [
