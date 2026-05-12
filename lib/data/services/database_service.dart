@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
   static const _databaseName = 'blooom_tracker.db';
-  static const _databaseVersion = 3;
+  static const _databaseVersion = 4;
 
   Database? _database;
 
@@ -59,7 +59,8 @@ class DatabaseService {
         average_period_length INTEGER NOT NULL,
         reminders_enabled INTEGER NOT NULL,
         dark_mode INTEGER NOT NULL,
-        onboarding_completed INTEGER NOT NULL DEFAULT 0
+        onboarding_completed INTEGER NOT NULL DEFAULT 0,
+        app_lock_enabled INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
@@ -77,6 +78,11 @@ class DatabaseService {
     if (oldVersion < 3) {
       await db.execute(
         'ALTER TABLE profile_settings ADD COLUMN onboarding_completed INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 4) {
+      await db.execute(
+        'ALTER TABLE profile_settings ADD COLUMN app_lock_enabled INTEGER NOT NULL DEFAULT 0',
       );
     }
   }
