@@ -1,32 +1,36 @@
-# Blooom
+<p align="center">
+  <img src="assets/app-logo.png" alt="Blooom logo" width="120" />
+</p>
+
+# 🌸 Blooom
 
 Blooom is a Flutter menstrual health companion app focused on private, device-only cycle tracking. It helps users log periods, follow wellness patterns, view predictions, see charts, add reminders, and protect access with a local app lock.
 
-## App Overview
+## ✨ App Overview
 
 Blooom includes:
 
-- Splash screen with Blooom branding.
-- Three-screen onboarding flow.
-- Rose and white visual theme with dark theme support.
-- Home dashboard with current cycle day, phase, next period, ovulation, cycle length, and period length.
-- Period logging with start date, end date, flow intensity, and notes.
-- Daily wellness logging for mood, symptoms, weight, temperature, sleep, water, energy, intimacy, and notes.
-- Calendar screen with period, predicted period, fertile window, and ovulation highlights.
-- Insights screen with bar, pie, and line charts.
-- Profile screen with editable name and birthday.
-- In-app local notifications for predicted period reminders.
-- Calendar export for predicted period events.
-- App lock using device authentication or a Blooom PIN.
-- Delete confirmation before removing period records.
+- 🌺 Splash screen with Blooom branding.
+- 🧭 Three-screen onboarding flow.
+- 🎨 Rose and white visual theme with dark theme support.
+- 🏠 Home dashboard with current cycle day, phase, next period, ovulation, cycle length, and period length.
+- 🩸 Period logging with start date, end date, flow intensity, and notes.
+- 🌿 Daily wellness logging for mood, symptoms, weight, temperature, sleep, water, energy, intimacy, and notes.
+- 📅 Calendar screen with period, predicted period, fertile window, and ovulation highlights.
+- 📊 Insights screen with bar, pie, and line charts.
+- 👤 Profile screen with editable name and birthday.
+- 🔔 In-app local notifications for predicted period reminders.
+- 🗓️ Calendar export for predicted period events.
+- 🔐 App lock using device authentication or a Blooom PIN.
+- 🗑️ Delete confirmation before removing period records.
 
-## Privacy
+## 🔒 Privacy
 
 Blooom is currently designed for local-device use only. Cycle, wellness, profile, lock, reminder, and prediction data are stored on the user's device. There is no account system, cloud sync, backend API, or remote database in this stage.
 
 The Blooom PIN is not stored as plain text. The app saves a local SHA-256 hash for PIN verification.
 
-## Architecture
+## 🏗️ Architecture
 
 The app follows an MVVM-style structure.
 
@@ -49,7 +53,7 @@ lib/
   main.dart
 ```
 
-### Layers
+### 🧩 Layers
 
 - `data/models`: Local data models such as period entries, wellness logs, and profile settings.
 - `data/services`: SQLite, local notification, calendar export, and authentication services.
@@ -59,9 +63,9 @@ lib/
 - `presentation/widgets`: Reusable UI widgets, charts, calendar, cards, and animations.
 - `core`: Theme, constants, and date utilities.
 
-## Main Features
+## 🚀 Main Features
 
-### Cycle Dashboard
+### 🏠 Cycle Dashboard
 
 The home screen shows:
 
@@ -73,7 +77,7 @@ The home screen shows:
 - Average period length.
 - Smart insight summary.
 
-### Calendar
+### 📅 Calendar
 
 The calendar highlights:
 
@@ -85,7 +89,7 @@ The calendar highlights:
 
 It also includes a legend and an option to export the predicted period to the device calendar.
 
-### Logs
+### 📝 Logs
 
 Users can add:
 
@@ -94,7 +98,7 @@ Users can add:
 
 Period logs can be deleted only after a confirmation dialog.
 
-### Insights
+### 📊 Insights
 
 Charts are powered by `fl_chart`:
 
@@ -104,7 +108,7 @@ Charts are powered by `fl_chart`:
 
 Charts show empty states until the user logs enough real data.
 
-### App Lock
+### 🔐 App Lock
 
 The Profile screen includes an App Lock setup flow:
 
@@ -123,15 +127,15 @@ Splash -> Blooom PIN page -> Dashboard
 
 If no lock is configured, the app opens normally after splash/onboarding.
 
-### Notifications
+### 🔔 Notifications
 
 The app schedules local period reminders on-device using `flutter_local_notifications`.
 
-### Calendar Export
+### 🗓️ Calendar Export
 
 Predicted period events can be sent to the device calendar using `add_2_calendar`. The app shows feedback when the calendar app is opened or unavailable.
 
-## Local Database
+## 💾 Local Database
 
 The app uses SQLite through `sqflite`.
 
@@ -143,7 +147,7 @@ Current tables:
 
 The database migration code checks existing columns before adding new ones, so development builds can upgrade safely without duplicate-column crashes.
 
-## Important Dependencies
+## 📦 Important Dependencies
 
 - `sqflite`: Local SQLite storage.
 - `path`: Database path handling.
@@ -155,7 +159,7 @@ The database migration code checks existing columns before adding new ones, so d
 - `local_auth`: Device biometric and credential authentication.
 - `crypto`: PIN hashing.
 
-## Assets
+## 🖼️ Assets
 
 Main logo:
 
@@ -171,7 +175,7 @@ The logo is used in:
 - Launcher icon assets.
 - Web manifest icons.
 
-## Android Notes
+## 🤖 Android Notes
 
 Android is configured for:
 
@@ -183,11 +187,11 @@ Android is configured for:
 
 `MainActivity` extends `FlutterFragmentActivity` because `local_auth` requires fragment activity support on Android.
 
-## iOS Notes
+## 🍎 iOS Notes
 
 `Info.plist` includes Face ID usage text for local app lock.
 
-## Run The App
+## ▶️ Run The App
 
 ```powershell
 flutter pub get
@@ -202,7 +206,7 @@ flutter pub get
 flutter run
 ```
 
-## Test And Analyze
+## ✅ Test And Analyze
 
 ```powershell
 dart analyze
@@ -214,20 +218,20 @@ Current tests include:
 - Logo smoke test.
 - Calendar widget regression test for month grids with leading blank cells.
 
-## Development Status
+## 🛠️ Development Status
 
 Current stage:
 
-- Local-only mobile app.
-- SQLite-based storage.
-- No backend.
-- No cloud sync.
-- No user account system.
+- 📱 Local-only mobile app.
+- 💾 SQLite-based storage.
+- 🚫 No backend.
+- 🚫 No cloud sync.
+- 🚫 No user account system.
 
 Planned future improvements may include:
 
-- Data export/import.
-- More cycle prediction settings.
-- More notification customization.
-- Optional cloud backup.
-- More detailed reports.
+- 📤 Data export/import.
+- ⚙️ More cycle prediction settings.
+- 🔔 More notification customization.
+- ☁️ Optional cloud backup.
+- 📈 More detailed reports.
