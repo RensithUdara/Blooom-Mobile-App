@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../viewmodels/app_scope.dart';
 import '../widgets/charts/analytics_charts.dart';
+import '../widgets/common/animated_content.dart';
 import '../widgets/common/soft_card.dart';
 
 class InsightsPage extends StatelessWidget {
@@ -14,12 +15,22 @@ class InsightsPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        return AnimatedPageList(
           children: [
-            Text('Insights', style: Theme.of(context).textTheme.headlineSmall),
+            const SectionHeader(
+              title: 'Insights',
+              subtitle: 'Charts become richer as you log real data',
+            ),
             const SizedBox(height: 14),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  AppColors.rose100.withValues(alpha: 0.42),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -37,6 +48,14 @@ class InsightsPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  AppColors.lavender.withValues(alpha: 0.13),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -54,6 +73,14 @@ class InsightsPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  AppColors.sky.withValues(alpha: 0.14),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -68,6 +95,12 @@ class InsightsPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SoftCard(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.rose50.withValues(alpha: 0.92),
+                  AppColors.lemon.withValues(alpha: 0.24),
+                ],
+              ),
               child: Row(
                 children: [
                   CircularProgressIndicator(
