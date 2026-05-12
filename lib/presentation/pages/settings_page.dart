@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
 import '../widgets/common/animated_content.dart';
+import '../widgets/common/adaptive_modal.dart';
 import '../widgets/common/calendar_export.dart';
 import '../widgets/common/soft_card.dart';
 
@@ -214,9 +215,9 @@ class SettingsPage extends StatelessWidget {
 }
 
 Future<void> _showAppLockSetupSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showAdaptiveModal<void>(
     context: context,
-    useSafeArea: true,
+    webMaxWidth: 640,
     builder: (_) => _AppLockSetupSheet(parentContext: context),
   );
 }
@@ -412,10 +413,10 @@ class _SetPinDialogState extends State<_SetPinDialog> {
 
 Future<void> _showEditProfileSheet(BuildContext context) {
   final profile = AppScope.of(context).profile;
-  return showModalBottomSheet<void>(
+  return showAdaptiveModal<void>(
     context: context,
     isScrollControlled: true,
-    useSafeArea: true,
+    webMaxWidth: 640,
     builder: (_) => _EditProfileSheet(
       initialName: profile.name,
       initialBirthDate: profile.birthDate,
