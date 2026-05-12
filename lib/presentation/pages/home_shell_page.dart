@@ -31,7 +31,28 @@ class HomeShellPage extends StatelessWidget {
             body: SafeArea(
               child: vm.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : IndexedStack(index: vm.selectedTab, children: _pages),
+                  : AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 320),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final offset = Tween<Offset>(
+                          begin: const Offset(0.04, 0),
+                          end: Offset.zero,
+                        ).animate(animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: offset,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: KeyedSubtree(
+                        key: ValueKey(vm.selectedTab),
+                        child: _pages[vm.selectedTab],
+                      ),
+                    ),
             ),
             bottomNavigationBar: Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
