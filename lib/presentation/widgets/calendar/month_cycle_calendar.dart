@@ -19,13 +19,13 @@ class MonthCycleCalendar extends StatelessWidget {
     final first = DateTime(month.year, month.month);
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
     final leading = first.weekday % 7;
-    final cells = List<DateTime?>.filled(leading, null)
-      ..addAll(
-        List.generate(
-          daysInMonth,
-          (index) => DateTime(month.year, month.month, index + 1),
-        ),
-      );
+    final cells = <DateTime?>[
+      ...List<DateTime?>.filled(leading, null),
+      ...List.generate(
+        daysInMonth,
+        (index) => DateTime(month.year, month.month, index + 1),
+      ),
+    ];
 
     return Column(
       children: [
@@ -62,30 +62,61 @@ class MonthCycleCalendar extends StatelessWidget {
             if (date == null) return const SizedBox.shrink();
             final color = _dayColor(date);
             final isToday = BloomDateUtils.isSameDay(date, DateTime.now());
-            return DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-                border: Border.all(
-                  color: isToday
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.transparent,
-                  width: 2,
+            return TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.92, end: 1),
+              duration: Duration(milliseconds: 220 + index * 8),
+              curve: Curves.easeOutBack,
+              builder: (context, scale, child) {
+                return Transform.scale(scale: scale, child: child);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                  border: Border.all(
+                    color: isToday
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                  boxShadow: color == null
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.28),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  '${date.day}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: color == null
-                        ? Theme.of(context).colorScheme.onSurface
-                        : AppColors.ink,
+                child: Center(
+                  child: Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: color == null
+                          ? Theme.of(context).colorScheme.onSurface
+                          : AppColors.ink,
+                    ),
                   ),
                 ),
               ),
             );
           },
+        ),
+        const SizedBox(height: 16),
+        const Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            _LegendDot(color: AppColors.rose200, label: 'Period'),
+            _LegendDot(color: AppColors.rose100, label: 'Predicted'),
+            _LegendDot(color: AppColors.lavender, label: 'Fertile'),
+            _LegendDot(color: AppColors.lemon, label: 'Ovulation'),
+          ],
         ),
       ],
     );
@@ -119,5 +150,28 @@ class MonthCycleCalendar extends StatelessWidget {
       return AppColors.lemon.withValues(alpha: 0.75);
     }
     return null;
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+      ],
+    );
   }
 }
