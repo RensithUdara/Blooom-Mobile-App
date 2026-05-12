@@ -47,6 +47,9 @@ class _StartupPageState extends State<StartupPage> {
         if (!vm.profile.onboardingCompleted) {
           return const OnboardingPage();
         }
+        if (vm.profile.appLockEnabled && !vm.isAppUnlocked) {
+          return const AppLockPage();
+        }
         return const HomeShellPage();
       },
     );
@@ -95,6 +98,83 @@ class SplashPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(AppConstants.tagline),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AppLockPage extends StatelessWidget {
+  const AppLockPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final vm = AppScope.of(context);
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 118,
+                  height: 118,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.18,
+                        ),
+                        blurRadius: 34,
+                        offset: const Offset(0, 18),
+                      ),
+                    ],
+                  ),
+                  child: Image.asset(AppConstants.logoAsset),
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  'Blooom is locked',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Use your device lock or biometric authentication to continue.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      final unlocked = await vm.authenticateAppLock();
+                      if (!unlocked && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Could not unlock Blooom.'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.lock_open),
+                    label: const Text('Unlock'),
+                  ),
+                ),
               ],
             ),
           ),
