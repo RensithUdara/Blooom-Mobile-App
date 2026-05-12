@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../common/animated_content.dart';
 import '../../viewmodels/app_view_model.dart';
 
 class CycleLengthBarChart extends StatelessWidget {
@@ -13,6 +14,7 @@ class CycleLengthBarChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (values.isEmpty) {
       return const _EmptyChartMessage(
+        icon: Icons.bar_chart,
         message: 'Add at least two periods to see cycle length trends.',
       );
     }
@@ -61,6 +63,7 @@ class SymptomPieChart extends StatelessWidget {
     final entries = counts.entries.take(4).toList();
     if (entries.isEmpty) {
       return const _EmptyChartMessage(
+        icon: Icons.pie_chart_outline,
         message: 'Log symptoms to build your symptom mix chart.',
       );
     }
@@ -106,6 +109,7 @@ class HealthLineChart extends StatelessWidget {
     final logs = viewModel.wellnessLogs.take(10).toList().reversed.toList();
     if (logs.isEmpty) {
       return const _EmptyChartMessage(
+        icon: Icons.show_chart,
         message: 'Add daily wellness logs to see your energy trend.',
       );
     }
@@ -161,20 +165,13 @@ class HealthLineChart extends StatelessWidget {
 }
 
 class _EmptyChartMessage extends StatelessWidget {
-  const _EmptyChartMessage({required this.message});
+  const _EmptyChartMessage({required this.icon, required this.message});
 
+  final IconData icon;
   final String message;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        message,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
+    return EmptyState(icon: icon, title: 'Waiting for data', message: message);
   }
 }
