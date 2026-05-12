@@ -31,8 +31,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
     _OnboardingItem(
       icon: Icons.lock_outline,
       title: 'Private on this device',
-      body:
-          'Your health data stays in the local SQLite database on your phone.',
+      body: 'Your health details stay private on your phone.',
     ),
   ];
 

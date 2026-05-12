@@ -145,7 +145,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'All cycle, mood, symptom, weight, sleep, temperature and intimacy data is stored only in the local SQLite database on this device.',
+                    'Your cycle, mood, symptom, sleep, weight, temperature and intimacy details stay private on this device.',
                   ),
                 ],
               ),
