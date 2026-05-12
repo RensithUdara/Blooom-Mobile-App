@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
   static const _databaseName = 'blooom_tracker.db';
-  static const _databaseVersion = 4;
+  static const _databaseVersion = 5;
 
   Database? _database;
 
@@ -60,7 +60,9 @@ class DatabaseService {
         reminders_enabled INTEGER NOT NULL,
         dark_mode INTEGER NOT NULL,
         onboarding_completed INTEGER NOT NULL DEFAULT 0,
-        app_lock_enabled INTEGER NOT NULL DEFAULT 0
+        app_lock_enabled INTEGER NOT NULL DEFAULT 0,
+        lock_method TEXT NOT NULL DEFAULT 'none',
+        app_pin_hash TEXT
       )
     ''');
   }
@@ -92,6 +94,26 @@ class DatabaseService {
         table: 'profile_settings',
         column: 'app_lock_enabled',
         definition: 'app_lock_enabled INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 5) {
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'lock_method',
+        definition: "lock_method TEXT NOT NULL DEFAULT 'none'",
+      );
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'app_pin_hash',
+        definition: 'app_pin_hash TEXT',
+      );
+      await db.update(
+        'profile_settings',
+        {'lock_method': 'device'},
+        where: 'app_lock_enabled = ? AND lock_method = ?',
+        whereArgs: [1, 'none'],
       );
     }
   }
