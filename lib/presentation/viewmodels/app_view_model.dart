@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/utils/bloom_date_utils.dart';
@@ -223,26 +225,43 @@ class AppViewModel extends ChangeNotifier {
     return unlocked;
   }
 
-  Future<bool> toggleAppLock(bool enabled) async {
-    if (!enabled) {
-      profile = profile.copyWith(appLockEnabled: false);
-      isAppUnlocked = false;
-      await _repository.saveProfile(profile);
-      notifyListeners();
-      return true;
-    }
-
+  Future<bool> enableDeviceAppLock() async {
     final supported = await _authService.isDeviceLockAvailable();
     if (!supported) return false;
 
     final authenticated = await _authService.authenticate();
     if (!authenticated) return false;
 
-    profile = profile.copyWith(appLockEnabled: true);
+    profile = profile.copyWith(lockMethod: 'device', clearPinHash: true);
     isAppUnlocked = true;
     await _repository.saveProfile(profile);
     notifyListeners();
     return true;
+  }
+
+  Future<void> enablePinAppLock(String pin) async {
+    profile = profile.copyWith(lockMethod: 'pin', appPinHash: _hashPin(pin));
+    isAppUnlocked = true;
+    await _repository.saveProfile(profile);
+    notifyListeners();
+  }
+
+  Future<void> disableAppLock() async {
+    profile = profile.copyWith(lockMethod: 'none', clearPinHash: true);
+    isAppUnlocked = false;
+    await _repository.saveProfile(profile);
+    notifyListeners();
+  }
+
+  Future<bool> unlockWithPin(String pin) async {
+    final unlocked = profile.usesPinLock && profile.appPinHash == _hashPin(pin);
+    isAppUnlocked = unlocked;
+    notifyListeners();
+    return unlocked;
+  }
+
+  String _hashPin(String pin) {
+    return sha256.convert(utf8.encode('blooom-local-pin:$pin')).toString();
   }
 
   Future<void> updateProfile({
