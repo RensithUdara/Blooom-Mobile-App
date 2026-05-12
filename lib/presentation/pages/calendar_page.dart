@@ -4,6 +4,7 @@ import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
 import '../widgets/calendar/month_cycle_calendar.dart';
 import '../widgets/common/animated_content.dart';
+import '../widgets/common/calendar_export.dart';
 import '../widgets/common/soft_card.dart';
 import 'log_period_sheet.dart';
 
@@ -75,6 +76,12 @@ class CalendarPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             FilledButton.icon(
+              onPressed: () => exportNextPeriodToCalendar(context),
+              icon: const Icon(Icons.calendar_today),
+              label: const Text('Add prediction to calendar'),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
               onPressed: () => showLogPeriodSheet(context),
               icon: const Icon(Icons.add),
               label: const Text('Add period date'),
