@@ -111,24 +111,24 @@ class SettingsPage extends StatelessWidget {
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('App lock'),
-                    subtitle: const Text(
-                      'Require device lock or biometrics before opening Blooom',
+                    subtitle: Text(
+                      vm.profile.usesPinLock
+                          ? 'PIN is required before opening Blooom'
+                          : vm.profile.usesDeviceLock
+                          ? 'Device lock or biometrics are required'
+                          : 'Add Face ID, fingerprint, device lock, or PIN',
                     ),
                     value: vm.profile.appLockEnabled,
                     onChanged: (enabled) async {
-                      final changed = await vm.toggleAppLock(enabled);
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            changed
-                                ? enabled
-                                      ? 'App lock enabled.'
-                                      : 'App lock disabled.'
-                                : 'Device lock or biometrics are not available.',
-                          ),
-                        ),
-                      );
+                      if (enabled) {
+                        await _showAppLockSetupSheet(context);
+                      } else {
+                        await vm.disableAppLock();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('App lock disabled.')),
+                        );
+                      }
                     },
                   ),
                 ],
@@ -164,6 +164,203 @@ class SettingsPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+Future<void> _showAppLockSetupSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    builder: (_) => _AppLockSetupSheet(parentContext: context),
+  );
+}
+
+class _AppLockSetupSheet extends StatelessWidget {
+  const _AppLockSetupSheet({required this.parentContext});
+
+  final BuildContext parentContext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 22),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Choose app lock',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Blooom will ask for this before showing your dashboard.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _LockOptionTile(
+            icon: Icons.face,
+            title: 'Face ID',
+            subtitle: 'Use device face unlock when available',
+            onTap: () => _enableDeviceLock(context, parentContext),
+          ),
+          _LockOptionTile(
+            icon: Icons.fingerprint,
+            title: 'Fingerprint',
+            subtitle: 'Use device fingerprint unlock when available',
+            onTap: () => _enableDeviceLock(context, parentContext),
+          ),
+          _LockOptionTile(
+            icon: Icons.pin_outlined,
+            title: 'Blooom PIN',
+            subtitle: 'Create a private PIN saved on this device',
+            onTap: () async {
+              Navigator.pop(context);
+              await _showSetPinDialog(parentContext);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _enableDeviceLock(
+    BuildContext sheetContext,
+    BuildContext parentContext,
+  ) async {
+    final messenger = ScaffoldMessenger.of(parentContext);
+    final navigator = Navigator.of(sheetContext);
+    final enabled = await AppScope.of(parentContext).enableDeviceAppLock();
+    if (!parentContext.mounted || !sheetContext.mounted) return;
+    navigator.pop();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          enabled
+              ? 'Device app lock enabled.'
+              : 'Device lock or biometrics are not available.',
+        ),
+      ),
+    );
+  }
+}
+
+class _LockOptionTile extends StatelessWidget {
+  const _LockOptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(child: Icon(icon)),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+}
+
+Future<void> _showSetPinDialog(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (_) => const _SetPinDialog(),
+  );
+}
+
+class _SetPinDialog extends StatefulWidget {
+  const _SetPinDialog();
+
+  @override
+  State<_SetPinDialog> createState() => _SetPinDialogState();
+}
+
+class _SetPinDialogState extends State<_SetPinDialog> {
+  final _pinController = TextEditingController();
+  final _confirmController = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Set Blooom PIN'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _pinController,
+            autofocus: true,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            decoration: const InputDecoration(
+              labelText: 'PIN',
+              counterText: '',
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _confirmController,
+            obscureText: true,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            decoration: InputDecoration(
+              labelText: 'Confirm PIN',
+              counterText: '',
+              errorText: _error,
+            ),
+            onSubmitted: (_) => _savePin(),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(onPressed: _savePin, child: const Text('Save PIN')),
+      ],
+    );
+  }
+
+  Future<void> _savePin() async {
+    final pin = _pinController.text.trim();
+    final confirm = _confirmController.text.trim();
+    if (pin.length < 4) {
+      setState(() => _error = 'Use at least 4 digits.');
+      return;
+    }
+    if (pin != confirm) {
+      setState(() => _error = 'PIN does not match.');
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    await AppScope.of(context).enablePinAppLock(pin);
+    if (!mounted) return;
+    Navigator.pop(context);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('PIN app lock enabled.')),
     );
   }
 }
