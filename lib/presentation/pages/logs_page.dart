@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/animated_content.dart';
 import '../widgets/common/soft_card.dart';
 import 'log_period_sheet.dart';
 import 'log_wellness_sheet.dart';
@@ -15,10 +16,12 @@ class LogsPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        return AnimatedPageList(
           children: [
-            Text('Logs', style: Theme.of(context).textTheme.headlineSmall),
+            const SectionHeader(
+              title: 'Logs',
+              subtitle: 'Capture cycle and wellness signals',
+            ),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -47,8 +50,10 @@ class LogsPage extends StatelessWidget {
             const SizedBox(height: 10),
             if (vm.periods.isEmpty)
               const SoftCard(
-                child: Text(
-                  'No periods logged yet. Add your last period to begin.',
+                child: EmptyState(
+                  icon: Icons.favorite_outline,
+                  title: 'No period logs yet',
+                  message: 'Add your last period to start cycle predictions.',
                 ),
               )
             else
@@ -68,7 +73,7 @@ class LogsPage extends StatelessWidget {
                     trailing: IconButton(
                       onPressed: period.id == null
                           ? null
-                          : () => vm.deletePeriod(period.id!),
+                          : () => _confirmDeletePeriod(context, period.id!),
                       icon: const Icon(Icons.delete_outline),
                     ),
                   ),
@@ -82,8 +87,11 @@ class LogsPage extends StatelessWidget {
             const SizedBox(height: 10),
             if (vm.wellnessLogs.isEmpty)
               const SoftCard(
-                child: Text(
-                  'Track mood, symptoms, sleep, water, temperature and more.',
+                child: EmptyState(
+                  icon: Icons.spa_outlined,
+                  title: 'No wellness logs yet',
+                  message:
+                      'Track mood, symptoms, sleep, water, temperature and more.',
                 ),
               )
             else
@@ -115,5 +123,39 @@ class LogsPage extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+Future<void> _confirmDeletePeriod(BuildContext context, int id) async {
+  final vm = AppScope.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Delete period log?'),
+        content: const Text(
+          'This removes the saved period from this device and updates your predictions.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed == true) {
+    await vm.deletePeriod(id);
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Period log deleted.')));
+    }
   }
 }
