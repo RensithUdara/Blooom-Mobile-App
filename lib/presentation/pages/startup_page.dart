@@ -280,7 +280,7 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
 
   Future<void> _unlockWithPin() async {
     final pin = _pinController.text.trim();
-    if (pin.length < 4) {
+    if (!RegExp(r'^\d{4,6}$').hasMatch(pin)) {
       setState(() => _error = 'Enter your PIN.');
       return;
     }
