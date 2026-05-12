@@ -1,0 +1,119 @@
+import 'package:flutter/material.dart';
+
+import '../../core/utils/bloom_date_utils.dart';
+import '../viewmodels/app_scope.dart';
+import '../widgets/common/soft_card.dart';
+import 'log_period_sheet.dart';
+import 'log_wellness_sheet.dart';
+
+class LogsPage extends StatelessWidget {
+  const LogsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = AppScope.of(context);
+    return AnimatedBuilder(
+      animation: vm,
+      builder: (context, _) {
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+          children: [
+            Text('Logs', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => showLogPeriodSheet(context),
+                    icon: const Icon(Icons.favorite),
+                    label: const Text('Period'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => showLogWellnessSheet(context),
+                    icon: const Icon(Icons.spa),
+                    label: const Text('Wellness'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Period history',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 10),
+            if (vm.periods.isEmpty)
+              const SoftCard(
+                child: Text(
+                  'No periods logged yet. Add your last period to begin.',
+                ),
+              )
+            else
+              ...vm.periods.map(
+                (period) => SoftCard(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const CircleAvatar(child: Icon(Icons.water_drop)),
+                    title: Text(
+                      '${BloomDateUtils.dayMonth(period.startDate)} - '
+                      '${BloomDateUtils.dayMonth(period.endDate)}',
+                    ),
+                    subtitle: Text(
+                      '${period.periodLength} days  |  Flow ${period.flowIntensity}/5',
+                    ),
+                    trailing: IconButton(
+                      onPressed: period.id == null
+                          ? null
+                          : () => vm.deletePeriod(period.id!),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 10),
+            Text(
+              'Daily health',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 10),
+            if (vm.wellnessLogs.isEmpty)
+              const SoftCard(
+                child: Text(
+                  'Track mood, symptoms, sleep, water, temperature and more.',
+                ),
+              )
+            else
+              ...vm.wellnessLogs
+                  .take(12)
+                  .map(
+                    (log) => SoftCard(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const CircleAvatar(child: Icon(Icons.mood)),
+                        title: Text(
+                          '${log.mood}  |  ${BloomDateUtils.dayMonth(log.date)}',
+                        ),
+                        subtitle: Text(
+                          [
+                            if (log.symptoms.isNotEmpty)
+                              log.symptoms.join(', '),
+                            if (log.sleepHours != null)
+                              '${log.sleepHours}h sleep',
+                            if (log.waterGlasses != null)
+                              '${log.waterGlasses} glasses water',
+                          ].join('  |  '),
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        );
+      },
+    );
+  }
+}
