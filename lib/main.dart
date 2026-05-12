@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app/blooom_app.dart';
 import 'data/repositories/tracker_repository.dart';
+import 'data/services/auth_service.dart';
 import 'data/services/calendar_service.dart';
 import 'data/services/database_service.dart';
 import 'data/services/notification_service.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
     repository: TrackerRepository(databaseService),
     notificationService: notificationService,
     calendarService: CalendarService(),
+    authService: AuthService(),
   );
   await viewModel.initialize();
 
