@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/animated_content.dart';
 import '../widgets/common/metric_tile.dart';
 import '../widgets/common/soft_card.dart';
 import '../widgets/home/cycle_ring.dart';
@@ -19,12 +20,18 @@ class HomePage extends StatelessWidget {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        return AnimatedPageList(
           children: [
             Row(
               children: [
-                Image.asset(AppConstants.logoAsset, width: 52, height: 52),
+                Hero(
+                  tag: 'blooom-logo',
+                  child: Image.asset(
+                    AppConstants.logoAsset,
+                    width: 52,
+                    height: 52,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -55,6 +62,15 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.surface,
+                  theme.colorScheme.primary.withValues(alpha: 0.10),
+                  AppColors.lemon.withValues(alpha: 0.16),
+                ],
+              ),
               child: Column(
                 children: [
                   CycleRing(
