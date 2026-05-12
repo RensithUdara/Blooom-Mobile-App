@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/animated_content.dart';
+import '../widgets/common/calendar_export.dart';
 import '../widgets/common/soft_card.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -14,13 +16,19 @@ class SettingsPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+        return AnimatedPageList(
           children: [
             Center(
               child: Column(
                 children: [
-                  Image.asset(AppConstants.logoAsset, width: 92, height: 92),
+                  Hero(
+                    tag: 'blooom-logo',
+                    child: Image.asset(
+                      AppConstants.logoAsset,
+                      width: 92,
+                      height: 92,
+                    ),
+                  ),
                   Text(
                     vm.profile.name.trim().isEmpty
                         ? AppConstants.appName
@@ -38,6 +46,14 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
+                ],
+              ),
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.badge_outlined),
@@ -62,6 +78,16 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             SoftCard(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface,
+                  Theme.of(
+                    context,
+                  ).colorScheme.secondary.withValues(alpha: 0.08),
+                ],
+              ),
               child: Column(
                 children: [
                   SwitchListTile(
@@ -80,6 +106,30 @@ class SettingsPage extends StatelessWidget {
                     ),
                     value: vm.profile.remindersEnabled,
                     onChanged: vm.toggleReminders,
+                  ),
+                  const Divider(),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('App lock'),
+                    subtitle: const Text(
+                      'Require device lock or biometrics before opening Blooom',
+                    ),
+                    value: vm.profile.appLockEnabled,
+                    onChanged: (enabled) async {
+                      final changed = await vm.toggleAppLock(enabled);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            changed
+                                ? enabled
+                                      ? 'App lock enabled.'
+                                      : 'App lock disabled.'
+                                : 'Device lock or biometrics are not available.',
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -108,7 +158,7 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('Add predicted period to Google Calendar'),
                 subtitle: Text(BloomDateUtils.full(vm.nextPeriodStart)),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: vm.addNextPeriodToCalendar,
+                onTap: () => exportNextPeriodToCalendar(context),
               ),
             ),
           ],
