@@ -17,14 +17,6 @@ class HomeShellPage extends StatefulWidget {
 }
 
 class _HomeShellPageState extends State<HomeShellPage> {
-  static const _pages = [
-    HomePage(),
-    CalendarPage(),
-    InsightsPage(),
-    LogsPage(),
-    SettingsPage(),
-  ];
-
   static const _items = [
     _BottomNavItem(Icons.home_outlined, Icons.home_rounded, 'Home'),
     _BottomNavItem(
@@ -76,7 +68,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                                     child: _AnimatedPageSwitcher(
                                       selectedTab: vm.selectedTab,
                                       previousTab: _previousTab,
-                                      child: _pages[vm.selectedTab],
+                                      child: _buildPage(vm.selectedTab),
                                     ),
                                   ),
                                 ),
@@ -89,7 +81,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                           child: _AnimatedPageSwitcher(
                             selectedTab: vm.selectedTab,
                             previousTab: _previousTab,
-                            child: _pages[vm.selectedTab],
+                            child: _buildPage(vm.selectedTab),
                           ),
                         ),
                 ),
@@ -106,6 +98,16 @@ class _HomeShellPageState extends State<HomeShellPage> {
         );
       },
     );
+  }
+
+  Widget _buildPage(int selectedTab) {
+    return switch (selectedTab) {
+      0 => const HomePage(key: ValueKey('home-page')),
+      1 => const CalendarPage(key: ValueKey('calendar-page')),
+      2 => const InsightsPage(key: ValueKey('insights-page')),
+      3 => const LogsPage(key: ValueKey('logs-page')),
+      _ => const SettingsPage(key: ValueKey('settings-page')),
+    };
   }
 
   void _selectTab(dynamic vm, int index) {
