@@ -346,8 +346,8 @@ class _SetPinDialogState extends State<_SetPinDialog> {
   Future<void> _savePin() async {
     final pin = _pinController.text.trim();
     final confirm = _confirmController.text.trim();
-    if (pin.length < 4) {
-      setState(() => _error = 'Use at least 4 digits.');
+    if (!RegExp(r'^\d{4,6}$').hasMatch(pin)) {
+      setState(() => _error = 'Use 4 to 6 digits.');
       return;
     }
     if (pin != confirm) {
