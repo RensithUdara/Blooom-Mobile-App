@@ -305,55 +305,60 @@ class _DeviceLockPageState extends State<DeviceLockPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 118,
-                  height: 118,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.primary.withValues(
-                          alpha: 0.18,
-                        ),
-                        blurRadius: 34,
-                        offset: const Offset(0, 18),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 118,
+                      height: 118,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.18,
+                            ),
+                            blurRadius: 34,
+                            offset: const Offset(0, 18),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Image.asset(AppConstants.logoAsset),
+                      child: Image.asset(AppConstants.logoAsset),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Blooom is locked',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Use your device lock or biometric authentication to continue.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _unlock,
+                        icon: const Icon(Icons.lock_open),
+                        label: const Text('Unlock'),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  'Blooom is locked',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Use your device lock or biometric authentication to continue.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _unlock,
-                    icon: const Icon(Icons.lock_open),
-                    label: const Text('Unlock'),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -386,52 +391,61 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(AppConstants.logoAsset, width: 110, height: 110),
-                const SizedBox(height: 24),
-                Text(
-                  'Enter PIN',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      AppConstants.logoAsset,
+                      width: 110,
+                      height: 110,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Enter PIN',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Unlock Blooom to view your private health data.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: _pinController,
+                      autofocus: true,
+                      obscureText: true,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        labelText: 'Blooom PIN',
+                        errorText: _error,
+                        counterText: '',
+                      ),
+                      onSubmitted: (_) => _unlockWithPin(),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _unlockWithPin,
+                        icon: const Icon(Icons.lock_open),
+                        label: const Text('Unlock'),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Unlock Blooom to view your private health data.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: _pinController,
-                  autofocus: true,
-                  obscureText: true,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    labelText: 'Blooom PIN',
-                    errorText: _error,
-                    counterText: '',
-                  ),
-                  onSubmitted: (_) => _unlockWithPin(),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _unlockWithPin,
-                    icon: const Icon(Icons.lock_open),
-                    label: const Text('Unlock'),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

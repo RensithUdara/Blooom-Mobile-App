@@ -24,98 +24,104 @@ class MonthCycleCalendar extends StatelessWidget {
       return DateTime(month.year, month.month, index - leading + 1);
     });
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-              .map(
-                (day) => Expanded(
-                  child: Center(
-                    child: Text(
-                      day,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: const ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+                  .map(
+                    (day) => Expanded(
+                      child: Center(
+                        child: Text(
+                          day,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 8),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: cells.length,
+              itemBuilder: (context, index) {
+                final date = cells[index];
+                if (date == null) return const SizedBox.shrink();
+                final color = _dayColor(date);
+                final isToday = BloomDateUtils.isSameDay(date, DateTime.now());
+                return TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.92, end: 1),
+                  duration: Duration(milliseconds: 220 + index * 8),
+                  curve: Curves.easeOutBack,
+                  builder: (context, scale, child) {
+                    return Transform.scale(scale: scale, child: child);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                      border: Border.all(
+                        color: isToday
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                        width: 2,
+                      ),
+                      boxShadow: color == null
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.28),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: color == null
+                              ? Theme.of(context).colorScheme.onSurface
+                              : AppColors.ink,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-              .toList(),
-        ),
-        const SizedBox(height: 8),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-          ),
-          itemCount: cells.length,
-          itemBuilder: (context, index) {
-            final date = cells[index];
-            if (date == null) return const SizedBox.shrink();
-            final color = _dayColor(date);
-            final isToday = BloomDateUtils.isSameDay(date, DateTime.now());
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.92, end: 1),
-              duration: Duration(milliseconds: 220 + index * 8),
-              curve: Curves.easeOutBack,
-              builder: (context, scale, child) {
-                return Transform.scale(scale: scale, child: child);
+                );
               },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color,
-                  border: Border.all(
-                    color: isToday
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.transparent,
-                    width: 2,
-                  ),
-                  boxShadow: color == null
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.28),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                ),
-                child: Center(
-                  child: Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: color == null
-                          ? Theme.of(context).colorScheme.onSurface
-                          : AppColors.ink,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        const Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: [
-            _LegendDot(color: AppColors.rose200, label: 'Period'),
-            _LegendDot(color: AppColors.rose100, label: 'Predicted'),
-            _LegendDot(color: AppColors.lavender, label: 'Fertile'),
-            _LegendDot(color: AppColors.lemon, label: 'Ovulation'),
+            ),
+            const SizedBox(height: 16),
+            const Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _LegendDot(color: AppColors.rose200, label: 'Period'),
+                _LegendDot(color: AppColors.rose100, label: 'Predicted'),
+                _LegendDot(color: AppColors.lavender, label: 'Fertile'),
+                _LegendDot(color: AppColors.lemon, label: 'Ovulation'),
+              ],
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 

@@ -48,65 +48,80 @@ class _OnboardingPageState extends State<OnboardingPage> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
-            child: Column(
-              children: [
-                Row(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+                child: Column(
                   children: [
-                    Image.asset(AppConstants.logoAsset, width: 44, height: 44),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppConstants.appName,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    Row(
+                      children: [
+                        Image.asset(
+                          AppConstants.logoAsset,
+                          width: 44,
+                          height: 44,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          AppConstants.appName,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: _finish,
+                          child: const Text('Skip'),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    TextButton(onPressed: _finish, child: const Text('Skip')),
-                  ],
-                ),
-                Expanded(
-                  child: PageView.builder(
-                    controller: _controller,
-                    itemCount: _items.length,
-                    onPageChanged: (value) => setState(() => _index = value),
-                    itemBuilder: (context, index) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 260),
-                        child: _OnboardingSlide(
-                          key: ValueKey(_items[index].title),
-                          item: _items[index],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (var i = 0; i < _items.length; i++)
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        width: i == _index ? 24 : 8,
-                        height: 8,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: i == _index
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(99),
-                        ),
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _controller,
+                        itemCount: _items.length,
+                        onPageChanged: (value) =>
+                            setState(() => _index = value),
+                        itemBuilder: (context, index) {
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 260),
+                            child: _OnboardingSlide(
+                              key: ValueKey(_items[index].title),
+                              item: _items[index],
+                            ),
+                          );
+                        },
                       ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (var i = 0; i < _items.length; i++)
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 220),
+                            width: i == _index ? 24 : 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: i == _index
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: isLast ? _finish : _next,
+                        child: Text(isLast ? 'Get started' : 'Continue'),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: isLast ? _finish : _next,
-                    child: Text(isLast ? 'Get started' : 'Continue'),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

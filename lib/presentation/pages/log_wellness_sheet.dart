@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/wellness_log.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/adaptive_modal.dart';
 
 Future<void> showLogWellnessSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showAdaptiveModal<void>(
     context: context,
     isScrollControlled: true,
-    useSafeArea: true,
+    webMaxWidth: 680,
     builder: (_) => const _LogWellnessSheet(),
   );
 }

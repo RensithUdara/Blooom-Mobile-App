@@ -17,14 +17,6 @@ class HomeShellPage extends StatefulWidget {
 }
 
 class _HomeShellPageState extends State<HomeShellPage> {
-  static const _pages = [
-    HomePage(),
-    CalendarPage(),
-    InsightsPage(),
-    LogsPage(),
-    SettingsPage(),
-  ];
-
   static const _items = [
     _BottomNavItem(Icons.home_outlined, Icons.home_rounded, 'Home'),
     _BottomNavItem(
@@ -45,64 +37,260 @@ class _HomeShellPageState extends State<HomeShellPage> {
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        return GradientBackground(
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: SafeArea(
-              child: vm.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 380),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) {
-                        final selectedKey = ValueKey('page-${vm.selectedTab}');
-                        final isIncoming = child.key == selectedKey;
-                        final direction = vm.selectedTab >= _previousTab
-                            ? 1.0
-                            : -1.0;
-                        final offset = Tween<Offset>(
-                          begin: Offset(
-                            (isIncoming ? 0.10 : -0.05) * direction,
-                            0,
-                          ),
-                          end: Offset.zero,
-                        ).chain(CurveTween(curve: Curves.easeOutCubic));
-                        final scale = Tween<double>(
-                          begin: 0.985,
-                          end: 1.0,
-                        ).chain(CurveTween(curve: Curves.easeOutCubic));
-                        return ClipRect(
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: animation.drive(offset),
-                              child: ScaleTransition(
-                                scale: animation.drive(scale),
-                                child: child,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 900;
+            return GradientBackground(
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: SafeArea(
+                  child: vm.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : isWide
+                      ? Row(
+                          children: [
+                            _DesktopSideNav(
+                              items: _items,
+                              selectedIndex: vm.selectedTab,
+                              onSelected: (index) => _selectTab(vm, index),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 1180,
+                                    ),
+                                    child: _AnimatedPageSwitcher(
+                                      selectedTab: vm.selectedTab,
+                                      previousTab: _previousTab,
+                                      child: _buildPage(vm.selectedTab),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
+                          ],
+                        )
+                      : Align(
+                          alignment: Alignment.topCenter,
+                          child: _AnimatedPageSwitcher(
+                            selectedTab: vm.selectedTab,
+                            previousTab: _previousTab,
+                            child: _buildPage(vm.selectedTab),
                           ),
-                        );
-                      },
-                      child: KeyedSubtree(
-                        key: ValueKey('page-${vm.selectedTab}'),
-                        child: _pages[vm.selectedTab],
+                        ),
+                ),
+                bottomNavigationBar: isWide
+                    ? null
+                    : _AnimatedBottomBar(
+                        items: _items,
+                        selectedIndex: vm.selectedTab,
+                        onSelected: (index) => _selectTab(vm, index),
                       ),
-                    ),
-            ),
-            bottomNavigationBar: _AnimatedBottomBar(
-              items: _items,
-              selectedIndex: vm.selectedTab,
-              onSelected: (index) {
-                if (index == vm.selectedTab) return;
-                setState(() => _previousTab = vm.selectedTab);
-                vm.setTab(index);
-              },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPage(int selectedTab) {
+    return switch (selectedTab) {
+      0 => const HomePage(key: ValueKey('home-page')),
+      1 => const CalendarPage(key: ValueKey('calendar-page')),
+      2 => const InsightsPage(key: ValueKey('insights-page')),
+      3 => const LogsPage(key: ValueKey('logs-page')),
+      _ => const SettingsPage(key: ValueKey('settings-page')),
+    };
+  }
+
+  void _selectTab(dynamic vm, int index) {
+    if (index == vm.selectedTab) return;
+    setState(() => _previousTab = vm.selectedTab);
+    vm.setTab(index);
+  }
+}
+
+class _AnimatedPageSwitcher extends StatelessWidget {
+  const _AnimatedPageSwitcher({
+    required this.selectedTab,
+    required this.previousTab,
+    required this.child,
+  });
+
+  final int selectedTab;
+  final int previousTab;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 380),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        final selectedKey = ValueKey('page-$selectedTab');
+        final isIncoming = child.key == selectedKey;
+        final direction = selectedTab >= previousTab ? 1.0 : -1.0;
+        final offset = Tween<Offset>(
+          begin: Offset((isIncoming ? 0.10 : -0.05) * direction, 0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic));
+        final scale = Tween<double>(
+          begin: 0.985,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic));
+        return ClipRect(
+          child: FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(offset),
+              child: ScaleTransition(
+                scale: animation.drive(scale),
+                child: child,
+              ),
             ),
           ),
         );
       },
+      child: KeyedSubtree(key: ValueKey('page-$selectedTab'), child: child),
+    );
+  }
+}
+
+class _DesktopSideNav extends StatelessWidget {
+  const _DesktopSideNav({
+    required this.items,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final List<_BottomNavItem> items;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 248,
+      margin: const EdgeInsets.fromLTRB(18, 18, 0, 18),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.34),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.12),
+            blurRadius: 30,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Image.asset(AppConstants.logoAsset, width: 48, height: 48),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(AppConstants.appName, style: theme.textTheme.titleLarge),
+                  Text(
+                    'Health companion',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          for (var i = 0; i < items.length; i++)
+            _DesktopSideNavItem(
+              item: items[i],
+              selected: i == selectedIndex,
+              onTap: () => onSelected(i),
+            ),
+          const Spacer(),
+          Text(
+            'Private on this device',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DesktopSideNavItem extends StatelessWidget {
+  const _DesktopSideNavItem({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _BottomNavItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: selected
+                ? LinearGradient(
+                    colors: [
+                      AppColors.rose200.withValues(alpha: 0.82),
+                      AppColors.rose300.withValues(alpha: 0.44),
+                    ],
+                  )
+                : null,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selected ? item.selectedIcon : item.icon,
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                item.label,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
