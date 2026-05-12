@@ -131,16 +131,15 @@ class _DeviceLockPageState extends State<DeviceLockPage> {
   Future<void> _unlock() async {
     final unlocked = await AppScope.of(context).authenticateAppLock();
     if (!unlocked && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not unlock Blooom.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not unlock Blooom.')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final vm = AppScope.of(context);
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
