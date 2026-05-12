@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
 import '../viewmodels/app_scope.dart';
 import '../widgets/common/animated_content.dart';
+import '../widgets/common/calendar_export.dart';
 import '../widgets/common/metric_tile.dart';
 import '../widgets/common/soft_card.dart';
 import '../widgets/home/cycle_ring.dart';
@@ -147,7 +148,7 @@ class HomePage extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: FilledButton.tonalIcon(
-                          onPressed: vm.addNextPeriodToCalendar,
+                          onPressed: () => exportNextPeriodToCalendar(context),
                           icon: const Icon(Icons.calendar_today),
                           label: const Text('Google Calendar'),
                         ),
