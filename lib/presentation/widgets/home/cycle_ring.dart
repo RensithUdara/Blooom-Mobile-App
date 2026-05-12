@@ -18,52 +18,76 @@ class CycleRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 260,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size.square(230),
-            painter: _CycleRingPainter(
-              progress: (day / cycleLength).clamp(0.02, 1),
-              background: Theme.of(context).colorScheme.surfaceContainerHighest,
-            ),
-          ),
-          Container(
-            width: 146,
-            height: 146,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFFFF3A5), Color(0xFFFFE56D)],
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Day $day',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.ink,
+    final progress = (day / cycleLength).clamp(0.02, 1.0).toDouble();
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: progress),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedProgress, _) {
+        return SizedBox(
+          height: 260,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Transform.rotate(
+                angle: -0.18 + animatedProgress * 0.18,
+                child: CustomPaint(
+                  size: const Size.square(230),
+                  painter: _CycleRingPainter(
+                    progress: animatedProgress,
+                    background: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  phase,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelMedium?.copyWith(color: AppColors.ink),
+              ),
+              Container(
+                width: 152,
+                height: 152,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFFFF3A5), Color(0xFFFFE56D)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.lemon.withValues(alpha: 0.35),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Day $day',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.ink,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      child: Text(
+                        phase,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelMedium?.copyWith(color: AppColors.ink),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
