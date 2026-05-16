@@ -12,6 +12,7 @@ class ProfileSettings {
     this.pregnancyStartDate,
     this.lockMethod = 'none',
     this.appPinHash,
+    this.profileImageBase64,
   });
 
   final String name;
@@ -26,6 +27,7 @@ class ProfileSettings {
   final DateTime? pregnancyStartDate;
   final String lockMethod;
   final String? appPinHash;
+  final String? profileImageBase64;
 
   bool get appLockEnabled => lockMethod != 'none';
   bool get usesDeviceLock => lockMethod == 'device';
@@ -60,6 +62,8 @@ class ProfileSettings {
     String? lockMethod,
     String? appPinHash,
     bool clearPinHash = false,
+    String? profileImageBase64,
+    bool clearProfileImage = false,
   }) {
     return ProfileSettings(
       name: name ?? this.name,
@@ -78,6 +82,9 @@ class ProfileSettings {
           : pregnancyStartDate ?? this.pregnancyStartDate,
       lockMethod: lockMethod ?? this.lockMethod,
       appPinHash: clearPinHash ? null : appPinHash ?? this.appPinHash,
+      profileImageBase64: clearProfileImage
+          ? null
+          : profileImageBase64 ?? this.profileImageBase64,
     );
   }
 
@@ -97,6 +104,7 @@ class ProfileSettings {
       'app_lock_enabled': appLockEnabled ? 1 : 0,
       'lock_method': lockMethod,
       'app_pin_hash': appPinHash,
+      'profile_image_base64': profileImageBase64,
     };
   }
 
@@ -124,6 +132,7 @@ class ProfileSettings {
           map['lock_method'] as String? ??
           ((map['app_lock_enabled'] as int? ?? 0) == 1 ? 'device' : 'none'),
       appPinHash: map['app_pin_hash'] as String?,
+      profileImageBase64: map['profile_image_base64'] as String?,
     );
   }
 }

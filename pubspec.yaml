@@ -44,6 +44,7 @@ dependencies:
   add_2_calendar: ^3.0.1
   local_auth: ^3.0.1
   crypto: ^3.0.7
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:

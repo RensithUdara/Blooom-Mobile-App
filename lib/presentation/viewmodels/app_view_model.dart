@@ -343,11 +343,15 @@ class AppViewModel extends ChangeNotifier {
   Future<void> updateProfile({
     required String name,
     required DateTime? birthDate,
+    String? profileImageBase64,
+    bool clearProfileImage = false,
   }) async {
     profile = profile.copyWith(
       name: name.trim(),
       birthDate: birthDate == null ? null : BloomDateUtils.dateOnly(birthDate),
       clearBirthDate: birthDate == null,
+      profileImageBase64: profileImageBase64,
+      clearProfileImage: clearProfileImage,
     );
     await _repository.saveProfile(profile);
     notifyListeners();
