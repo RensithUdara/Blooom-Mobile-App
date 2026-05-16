@@ -25,7 +25,7 @@ class MetricTile extends StatelessWidget {
         return Transform.scale(scale: scale, child: child);
       },
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -39,18 +39,38 @@ class MetricTile extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: color.withValues(alpha: 0.18)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.10),
+              blurRadius: 22,
+              offset: const Offset(0, 12),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.16),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 19),
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(icon, color: color, size: 19),
+                ),
+                const Spacer(),
+                Container(
+                  width: 30,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.24),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ],
             ),
             const Spacer(),
             Text(
@@ -62,7 +82,14 @@ class MetricTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 2),
-            Text(label, style: theme.textTheme.labelMedium),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),

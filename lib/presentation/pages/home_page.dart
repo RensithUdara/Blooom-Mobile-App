@@ -51,13 +51,14 @@ class HomePage extends StatelessWidget {
             : 'Fertility day suggestions are off in Profile.';
         final pregnancyCard = vm.profile.pregnancyTrackingEnabled
             ? SoftCard(
+                padding: const EdgeInsets.all(16),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
+                    AppColors.mint.withValues(alpha: 0.22),
                     theme.colorScheme.surface,
-                    AppColors.mint.withValues(alpha: 0.15),
-                    AppColors.sky.withValues(alpha: 0.14),
+                    AppColors.lavender.withValues(alpha: 0.14),
                   ],
                 ),
                 child: Column(
@@ -65,19 +66,34 @@ class HomePage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.child_friendly_outlined),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Pregnancy tracker',
-                          style: theme.textTheme.titleMedium,
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: AppColors.mint.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.child_friendly_outlined),
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Pregnancy tracker',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ),
+                        if (vm.pregnancyWeek != null)
+                          _HomePill(label: 'Week ${vm.pregnancyWeek}'),
                       ],
                     ),
                     const SizedBox(height: 10),
                     if (vm.hasPregnancyTrackingDate) ...[
                       Text(
-                        'Week ${vm.pregnancyWeek}, ${vm.pregnancyTrimester.toLowerCase()}. '
+                        '${vm.pregnancyTrimester}, '
                         'Estimated due date is ${BloomDateUtils.full(vm.estimatedDueDate!)}.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          height: 1.35,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       LinearProgressIndicator(
@@ -96,22 +112,67 @@ class HomePage extends StatelessWidget {
               )
             : null;
         final insightCard = SoftCard(
+          padding: const EdgeInsets.all(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.colorScheme.surface,
+              AppColors.rose50.withValues(alpha: 0.82),
+            ],
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Smart insight', style: theme.textTheme.titleMedium),
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.lemon.withValues(alpha: 0.26),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.auto_awesome, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Smart insight',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  _HomePill(
+                    label:
+                        '${(vm.cycleRegularityScore * 100).round()}% confidence',
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               Text(
                 'Your fertile window is predicted around '
                 '${BloomDateUtils.dayMonth(vm.fertileStart)} - '
-                '${BloomDateUtils.dayMonth(vm.fertileEnd)}. '
-                'Cycle confidence is ${(vm.cycleRegularityScore * 100).round()}%.',
+                '${BloomDateUtils.dayMonth(vm.fertileEnd)}.',
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.35),
               ),
               const SizedBox(height: 8),
-              Text(
-                fertilityText,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.42,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  fertilityText,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
@@ -138,7 +199,7 @@ class HomePage extends StatelessWidget {
           ),
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
           children: [
             Row(
               children: [
@@ -224,7 +285,7 @@ class HomePage extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: columns,
-                  childAspectRatio: columns == 4 ? 1.35 : 1.18,
+                  childAspectRatio: columns == 4 ? 1.65 : 1.10,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   children: [
@@ -268,6 +329,31 @@ class HomePage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _HomePill extends StatelessWidget {
+  const _HomePill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     );
   }
 }
