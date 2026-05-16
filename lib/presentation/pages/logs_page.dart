@@ -118,13 +118,8 @@ class LogsPage extends StatelessWidget {
               .toList(),
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 32),
           children: [
-            const SectionHeader(
-              title: 'Logs',
-              subtitle: 'Capture cycle and wellness signals',
-            ),
-            const SizedBox(height: 14),
             summaryCard,
             const SizedBox(height: 12),
             actionRow,
