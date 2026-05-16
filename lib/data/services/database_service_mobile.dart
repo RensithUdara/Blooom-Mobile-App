@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
   static const _databaseName = 'blooom_tracker.db';
-  static const _databaseVersion = 6;
+  static const _databaseVersion = 7;
 
   Database? _database;
 
@@ -65,7 +65,8 @@ class DatabaseService {
         pregnancy_start_date TEXT,
         app_lock_enabled INTEGER NOT NULL DEFAULT 0,
         lock_method TEXT NOT NULL DEFAULT 'none',
-        app_pin_hash TEXT
+        app_pin_hash TEXT,
+        profile_image_base64 TEXT
       )
     ''');
   }
@@ -137,6 +138,14 @@ class DatabaseService {
         table: 'profile_settings',
         column: 'pregnancy_start_date',
         definition: 'pregnancy_start_date TEXT',
+      );
+    }
+    if (oldVersion < 7) {
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'profile_image_base64',
+        definition: 'profile_image_base64 TEXT',
       );
     }
   }
