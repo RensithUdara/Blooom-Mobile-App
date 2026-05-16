@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
@@ -742,6 +743,7 @@ class _SetPinDialogState extends State<_SetPinDialog> {
   final _pinController = TextEditingController();
   final _confirmController = TextEditingController();
   String? _error;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -752,48 +754,126 @@ class _SetPinDialogState extends State<_SetPinDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Set Blooom PIN'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _pinController,
-            autofocus: true,
-            obscureText: true,
-            keyboardType: TextInputType.number,
-            maxLength: 6,
-            decoration: const InputDecoration(
-              labelText: 'PIN',
-              counterText: '',
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.28),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.18),
+                blurRadius: 34,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(
+                          Icons.pin_outlined,
+                          color: scheme.primary,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Set Blooom PIN',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Use 4 to 6 digits to unlock your private health data.',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      height: 1.32,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _PinTextField(
+                    controller: _pinController,
+                    label: 'PIN',
+                    autofocus: true,
+                    onSubmitted: (_) => _savePin(),
+                  ),
+                  const SizedBox(height: 12),
+                  _PinTextField(
+                    controller: _confirmController,
+                    label: 'Confirm PIN',
+                    errorText: _error,
+                    onSubmitted: (_) => _savePin(),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: _saving
+                              ? null
+                              : () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton(
+                          onPressed: _saving ? null : _savePin,
+                          child: _saving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Save PIN'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _confirmController,
-            obscureText: true,
-            keyboardType: TextInputType.number,
-            maxLength: 6,
-            decoration: InputDecoration(
-              labelText: 'Confirm PIN',
-              counterText: '',
-              errorText: _error,
-            ),
-            onSubmitted: (_) => _savePin(),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
         ),
-        FilledButton(onPressed: _savePin, child: const Text('Save PIN')),
-      ],
+      ),
     );
   }
 
   Future<void> _savePin() async {
+    if (_saving) return;
     final pin = _pinController.text.trim();
     final confirm = _confirmController.text.trim();
     if (!RegExp(r'^\d{4,6}$').hasMatch(pin)) {
@@ -806,11 +886,52 @@ class _SetPinDialogState extends State<_SetPinDialog> {
     }
 
     final messenger = ScaffoldMessenger.of(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
     await AppScope.of(context).enablePinAppLock(pin);
     if (!mounted) return;
     Navigator.pop(context);
     messenger.showSnackBar(
       const SnackBar(content: Text('PIN app lock enabled.')),
+    );
+  }
+}
+
+class _PinTextField extends StatelessWidget {
+  const _PinTextField({
+    required this.controller,
+    required this.label,
+    required this.onSubmitted,
+    this.autofocus = false,
+    this.errorText,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final ValueChanged<String> onSubmitted;
+  final bool autofocus;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      obscureText: true,
+      keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
+      maxLength: 6,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      decoration: InputDecoration(
+        labelText: label,
+        errorText: errorText,
+        counterText: '',
+        prefixIcon: const Icon(Icons.lock_outline),
+        filled: true,
+      ),
+      onSubmitted: onSubmitted,
     );
   }
 }
