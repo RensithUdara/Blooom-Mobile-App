@@ -40,17 +40,6 @@ class _LogPeriodSheetState extends State<_LogPeriodSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
           Text('Log period', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
           Row(
