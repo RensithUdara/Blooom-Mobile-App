@@ -46,6 +46,55 @@ class HomePage extends StatelessWidget {
             ],
           ),
         );
+        final fertilityText = vm.profile.fertilitySuggestionsEnabled
+            ? vm.fertilitySuggestion
+            : 'Fertility day suggestions are off in Profile.';
+        final pregnancyCard = vm.profile.pregnancyTrackingEnabled
+            ? SoftCard(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    theme.colorScheme.surface,
+                    AppColors.mint.withValues(alpha: 0.15),
+                    AppColors.sky.withValues(alpha: 0.14),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.child_friendly_outlined),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Pregnancy tracker',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (vm.hasPregnancyTrackingDate) ...[
+                      Text(
+                        'Week ${vm.pregnancyWeek}, ${vm.pregnancyTrimester.toLowerCase()}. '
+                        'Estimated due date is ${BloomDateUtils.full(vm.estimatedDueDate!)}.',
+                      ),
+                      const SizedBox(height: 12),
+                      LinearProgressIndicator(
+                        value: (vm.pregnancyDay ?? 0) / 280,
+                        minHeight: 8,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      const SizedBox(height: 10),
+                      Text('${vm.daysUntilDueDate} days until due date'),
+                    ] else
+                      const Text(
+                        'Log a period or set the last period date in Profile to start tracking.',
+                      ),
+                  ],
+                ),
+              )
+            : null;
         final insightCard = SoftCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,6 +106,13 @@ class HomePage extends StatelessWidget {
                 '${BloomDateUtils.dayMonth(vm.fertileStart)} - '
                 '${BloomDateUtils.dayMonth(vm.fertileEnd)}. '
                 'Cycle confidence is ${(vm.cycleRegularityScore * 100).round()}%.',
+              ),
+              const SizedBox(height: 8),
+              Text(
+                fertilityText,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 14),
               Row(
@@ -131,6 +187,10 @@ class HomePage extends StatelessWidget {
                       cycleCard,
                       const SizedBox(height: 16),
                       insightCard,
+                      if (pregnancyCard != null) ...[
+                        const SizedBox(height: 16),
+                        pregnancyCard,
+                      ],
                     ],
                   );
                 }
@@ -140,7 +200,18 @@ class HomePage extends StatelessWidget {
                   children: [
                     Expanded(flex: 6, child: cycleCard),
                     const SizedBox(width: 16),
-                    Expanded(flex: 5, child: insightCard),
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        children: [
+                          insightCard,
+                          if (pregnancyCard != null) ...[
+                            const SizedBox(height: 16),
+                            pregnancyCard,
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 );
               },
@@ -181,6 +252,15 @@ class HomePage extends StatelessWidget {
                       value: '${vm.averagePeriodLength} days',
                       color: AppColors.mint,
                     ),
+                    if (vm.profile.pregnancyTrackingEnabled)
+                      MetricTile(
+                        icon: Icons.child_care,
+                        label: 'Pregnancy',
+                        value: vm.pregnancyWeek == null
+                            ? 'Set date'
+                            : 'Week ${vm.pregnancyWeek}',
+                        color: AppColors.lemon,
+                      ),
                   ],
                 );
               },

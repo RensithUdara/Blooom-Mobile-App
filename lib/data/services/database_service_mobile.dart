@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
   static const _databaseName = 'blooom_tracker.db';
-  static const _databaseVersion = 5;
+  static const _databaseVersion = 6;
 
   Database? _database;
 
@@ -60,6 +60,9 @@ class DatabaseService {
         reminders_enabled INTEGER NOT NULL,
         dark_mode INTEGER NOT NULL,
         onboarding_completed INTEGER NOT NULL DEFAULT 0,
+        fertility_suggestions_enabled INTEGER NOT NULL DEFAULT 1,
+        pregnancy_tracking_enabled INTEGER NOT NULL DEFAULT 0,
+        pregnancy_start_date TEXT,
         app_lock_enabled INTEGER NOT NULL DEFAULT 0,
         lock_method TEXT NOT NULL DEFAULT 'none',
         app_pin_hash TEXT
@@ -114,6 +117,26 @@ class DatabaseService {
         {'lock_method': 'device'},
         where: 'app_lock_enabled = ? AND lock_method = ?',
         whereArgs: [1, 'none'],
+      );
+    }
+    if (oldVersion < 6) {
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'fertility_suggestions_enabled',
+        definition: 'fertility_suggestions_enabled INTEGER NOT NULL DEFAULT 1',
+      );
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'pregnancy_tracking_enabled',
+        definition: 'pregnancy_tracking_enabled INTEGER NOT NULL DEFAULT 0',
+      );
+      await _addColumnIfMissing(
+        db,
+        table: 'profile_settings',
+        column: 'pregnancy_start_date',
+        definition: 'pregnancy_start_date TEXT',
       );
     }
   }

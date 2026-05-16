@@ -7,6 +7,9 @@ class ProfileSettings {
     this.remindersEnabled = true,
     this.darkMode = false,
     this.onboardingCompleted = false,
+    this.fertilitySuggestionsEnabled = true,
+    this.pregnancyTrackingEnabled = false,
+    this.pregnancyStartDate,
     this.lockMethod = 'none',
     this.appPinHash,
   });
@@ -18,6 +21,9 @@ class ProfileSettings {
   final bool remindersEnabled;
   final bool darkMode;
   final bool onboardingCompleted;
+  final bool fertilitySuggestionsEnabled;
+  final bool pregnancyTrackingEnabled;
+  final DateTime? pregnancyStartDate;
   final String lockMethod;
   final String? appPinHash;
 
@@ -47,6 +53,10 @@ class ProfileSettings {
     bool? remindersEnabled,
     bool? darkMode,
     bool? onboardingCompleted,
+    bool? fertilitySuggestionsEnabled,
+    bool? pregnancyTrackingEnabled,
+    DateTime? pregnancyStartDate,
+    bool clearPregnancyStartDate = false,
     String? lockMethod,
     String? appPinHash,
     bool clearPinHash = false,
@@ -59,6 +69,13 @@ class ProfileSettings {
       remindersEnabled: remindersEnabled ?? this.remindersEnabled,
       darkMode: darkMode ?? this.darkMode,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      fertilitySuggestionsEnabled:
+          fertilitySuggestionsEnabled ?? this.fertilitySuggestionsEnabled,
+      pregnancyTrackingEnabled:
+          pregnancyTrackingEnabled ?? this.pregnancyTrackingEnabled,
+      pregnancyStartDate: clearPregnancyStartDate
+          ? null
+          : pregnancyStartDate ?? this.pregnancyStartDate,
       lockMethod: lockMethod ?? this.lockMethod,
       appPinHash: clearPinHash ? null : appPinHash ?? this.appPinHash,
     );
@@ -74,6 +91,9 @@ class ProfileSettings {
       'reminders_enabled': remindersEnabled ? 1 : 0,
       'dark_mode': darkMode ? 1 : 0,
       'onboarding_completed': onboardingCompleted ? 1 : 0,
+      'fertility_suggestions_enabled': fertilitySuggestionsEnabled ? 1 : 0,
+      'pregnancy_tracking_enabled': pregnancyTrackingEnabled ? 1 : 0,
+      'pregnancy_start_date': pregnancyStartDate?.toIso8601String(),
       'app_lock_enabled': appLockEnabled ? 1 : 0,
       'lock_method': lockMethod,
       'app_pin_hash': appPinHash,
@@ -82,6 +102,7 @@ class ProfileSettings {
 
   factory ProfileSettings.fromMap(Map<String, Object?> map) {
     final birthDateText = map['birth_date'] as String?;
+    final pregnancyStartText = map['pregnancy_start_date'] as String?;
     return ProfileSettings(
       name: map['name'] as String? ?? '',
       birthDate: birthDateText == null
@@ -92,6 +113,13 @@ class ProfileSettings {
       remindersEnabled: (map['reminders_enabled'] as int? ?? 1) == 1,
       darkMode: (map['dark_mode'] as int? ?? 0) == 1,
       onboardingCompleted: (map['onboarding_completed'] as int? ?? 0) == 1,
+      fertilitySuggestionsEnabled:
+          (map['fertility_suggestions_enabled'] as int? ?? 1) == 1,
+      pregnancyTrackingEnabled:
+          (map['pregnancy_tracking_enabled'] as int? ?? 0) == 1,
+      pregnancyStartDate: pregnancyStartText == null
+          ? null
+          : DateTime.tryParse(pregnancyStartText),
       lockMethod:
           map['lock_method'] as String? ??
           ((map['app_lock_enabled'] as int? ?? 0) == 1 ? 'device' : 'none'),
