@@ -67,218 +67,227 @@ class _LogWellnessSheetState extends State<_LogWellnessSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(18, 8, 18, bottom + 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.rose400,
-                      AppColors.lavender.withValues(alpha: 0.82),
+    final sheetMaxHeight = MediaQuery.sizeOf(context).height * 0.78;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: sheetMaxHeight),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(18, 8, 18, bottom + 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.rose400,
+                        AppColors.lavender.withValues(alpha: 0.82),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.rose400.withValues(alpha: 0.24),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.rose400.withValues(alpha: 0.24),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  child: const Icon(Icons.spa_outlined, color: Colors.white),
                 ),
-                child: const Icon(Icons.spa_outlined, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Daily wellness',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Daily wellness',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _WellnessSection(
-            title: 'Mood',
-            icon: Icons.mood_outlined,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _moods
-                  .map(
-                    (mood) => _WellnessChip(
-                      label: mood,
-                      selected: _mood == mood,
-                      onSelected: (_) => setState(() => _mood = mood),
-                    ),
-                  )
-                  .toList(),
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          _WellnessSection(
-            title: 'Symptoms',
-            icon: Icons.healing_outlined,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _symptoms
-                  .map(
-                    (symptom) => _WellnessChip(
-                      label: symptom,
-                      selected: _selectedSymptoms.contains(symptom),
-                      onSelected: (selected) => setState(() {
-                        if (selected) {
-                          _selectedSymptoms.add(symptom);
-                        } else {
-                          _selectedSymptoms.remove(symptom);
-                        }
-                      }),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _WellnessSection(
-            title: 'Energy',
-            icon: Icons.bolt_outlined,
-            trailing: _ValuePill(value: '${_energy.round()}/5'),
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: AppColors.rose400,
-                inactiveTrackColor: AppColors.rose100,
-                thumbColor: AppColors.rose400,
-                overlayColor: AppColors.rose400.withValues(alpha: 0.12),
-                trackHeight: 5,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-              ),
-              child: Slider(
-                value: _energy,
-                min: 1,
-                max: 5,
-                divisions: 4,
-                onChanged: (value) => setState(() => _energy = value),
+            const SizedBox(height: 16),
+            _WellnessSection(
+              title: 'Mood',
+              icon: Icons.mood_outlined,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _moods
+                    .map(
+                      (mood) => _WellnessChip(
+                        label: mood,
+                        selected: _mood == mood,
+                        onSelected: (_) => setState(() => _mood = mood),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _ResponsiveFieldGrid(
-            children: [
-              _NumberField(
-                controller: _weight,
-                label: 'Weight kg',
-                icon: Icons.monitor_weight_outlined,
-              ),
-              _NumberField(
-                controller: _temperature,
-                label: 'Temp C',
-                icon: Icons.thermostat_outlined,
-              ),
-              _NumberField(
-                controller: _sleep,
-                label: 'Sleep hours',
-                icon: Icons.bedtime_outlined,
-              ),
-              _NumberField(
-                controller: _water,
-                label: 'Water glasses',
-                icon: Icons.water_drop_outlined,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: 0.56),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: scheme.outlineVariant.withValues(alpha: 0.36),
+            const SizedBox(height: 12),
+            _WellnessSection(
+              title: 'Symptoms',
+              icon: Icons.healing_outlined,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _symptoms
+                    .map(
+                      (symptom) => _WellnessChip(
+                        label: symptom,
+                        selected: _selectedSymptoms.contains(symptom),
+                        onSelected: (selected) => setState(() {
+                          if (selected) {
+                            _selectedSymptoms.add(symptom);
+                          } else {
+                            _selectedSymptoms.remove(symptom);
+                          }
+                        }),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-            child: Column(
-              children: [
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  secondary: const Icon(Icons.favorite_outline),
-                  title: const Text('Sex or intimacy'),
-                  value: _hadSex,
-                  onChanged: (value) => setState(() => _hadSex = value),
+            const SizedBox(height: 12),
+            _WellnessSection(
+              title: 'Energy',
+              icon: Icons.bolt_outlined,
+              trailing: _ValuePill(value: '${_energy.round()}/5'),
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.rose400,
+                  inactiveTrackColor: AppColors.rose100,
+                  thumbColor: AppColors.rose400,
+                  overlayColor: AppColors.rose400.withValues(alpha: 0.12),
+                  trackHeight: 5,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 10,
+                  ),
                 ),
-                if (_hadSex) ...[
-                  Divider(color: scheme.outlineVariant.withValues(alpha: 0.42)),
+                child: Slider(
+                  value: _energy,
+                  min: 1,
+                  max: 5,
+                  divisions: 4,
+                  onChanged: (value) => setState(() => _energy = value),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _ResponsiveFieldGrid(
+              children: [
+                _NumberField(
+                  controller: _weight,
+                  label: 'Weight kg',
+                  icon: Icons.monitor_weight_outlined,
+                ),
+                _NumberField(
+                  controller: _temperature,
+                  label: 'Temp C',
+                  icon: Icons.thermostat_outlined,
+                ),
+                _NumberField(
+                  controller: _sleep,
+                  label: 'Sleep hours',
+                  icon: Icons.bedtime_outlined,
+                ),
+                _NumberField(
+                  controller: _water,
+                  label: 'Water glasses',
+                  icon: Icons.water_drop_outlined,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withValues(alpha: 0.56),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.36),
+                ),
+              ),
+              child: Column(
+                children: [
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.verified_user_outlined),
-                    title: const Text('Protected'),
-                    value: _protectedSex,
-                    onChanged: (value) => setState(() => _protectedSex = value),
+                    secondary: const Icon(Icons.favorite_outline),
+                    title: const Text('Sex or intimacy'),
+                    value: _hadSex,
+                    onChanged: (value) => setState(() => _hadSex = value),
                   ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _notes,
-            minLines: 3,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: 'Extra notes',
-              prefixIcon: Icon(Icons.notes_outlined, color: scheme.primary),
-              alignLabelWithHint: true,
-            ),
-          ),
-          const SizedBox(height: 16),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.rose400.withValues(alpha: 0.22),
-                  blurRadius: 22,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  await AppScope.of(context).addWellnessLog(
-                    WellnessLog(
-                      date: DateTime.now(),
-                      mood: _mood,
-                      symptoms: _selectedSymptoms.toList(),
-                      weightKg: double.tryParse(_weight.text),
-                      temperatureC: double.tryParse(_temperature.text),
-                      sleepHours: double.tryParse(_sleep.text),
-                      waterGlasses: int.tryParse(_water.text),
-                      energyLevel: _energy.round(),
-                      hadSex: _hadSex,
-                      protectedSex: _protectedSex,
-                      notes: _notes.text.trim(),
+                  if (_hadSex) ...[
+                    Divider(
+                      color: scheme.outlineVariant.withValues(alpha: 0.42),
                     ),
-                  );
-                  if (context.mounted) Navigator.pop(context);
-                },
-                icon: const Icon(Icons.check),
-                label: const Text('Save wellness log'),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      secondary: const Icon(Icons.verified_user_outlined),
+                      title: const Text('Protected'),
+                      value: _protectedSex,
+                      onChanged: (value) =>
+                          setState(() => _protectedSex = value),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notes,
+              minLines: 3,
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Extra notes',
+                prefixIcon: Icon(Icons.notes_outlined, color: scheme.primary),
+                alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.rose400.withValues(alpha: 0.22),
+                    blurRadius: 22,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    await AppScope.of(context).addWellnessLog(
+                      WellnessLog(
+                        date: DateTime.now(),
+                        mood: _mood,
+                        symptoms: _selectedSymptoms.toList(),
+                        weightKg: double.tryParse(_weight.text),
+                        temperatureC: double.tryParse(_temperature.text),
+                        sleepHours: double.tryParse(_sleep.text),
+                        waterGlasses: int.tryParse(_water.text),
+                        energyLevel: _energy.round(),
+                        hadSex: _hadSex,
+                        protectedSex: _protectedSex,
+                        notes: _notes.text.trim(),
+                      ),
+                    );
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.check),
+                  label: const Text('Save wellness log'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
