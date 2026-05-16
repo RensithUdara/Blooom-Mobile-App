@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bloom_date_utils.dart';
@@ -42,6 +45,8 @@ class SettingsPage extends StatelessWidget {
         final profileHero = _ProfileHero(
           name: displayName,
           caption: profileCaption,
+          imageBase64: vm.profile.profileImageBase64,
+          onChangePhoto: () => _showProfileImageSheet(context),
         );
         final personalCard = _ProfileActionCard(
           icon: Icons.badge_outlined,
@@ -177,10 +182,17 @@ class SettingsPage extends StatelessWidget {
 }
 
 class _ProfileHero extends StatelessWidget {
-  const _ProfileHero({required this.name, required this.caption});
+  const _ProfileHero({
+    required this.name,
+    required this.caption,
+    required this.onChangePhoto,
+    this.imageBase64,
+  });
 
   final String name;
   final String caption;
+  final String? imageBase64;
+  final VoidCallback onChangePhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -188,20 +200,8 @@ class _ProfileHero extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          Hero(
-            tag: 'blooom-logo',
-            child: Container(
-              width: 86,
-              height: 86,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(2),
-              ),
-              child: Image.asset(AppConstants.logoAsset),
-            ),
-          ),
-          const SizedBox(height: 4),
+          _ProfilePhoto(imageBase64: imageBase64, onTap: onChangePhoto),
+          const SizedBox(height: 10),
           Text(
             name,
             maxLines: 1,
@@ -224,6 +224,83 @@ class _ProfileHero extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfilePhoto extends StatelessWidget {
+  const _ProfilePhoto({required this.onTap, this.imageBase64});
+
+  final String? imageBase64;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final imageBytes = _decodeProfileImage(imageBase64);
+
+    return Semantics(
+      button: true,
+      label: imageBytes == null ? 'Add profile photo' : 'Change profile photo',
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              padding: imageBytes == null ? const EdgeInsets.all(12) : null,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.surface.withValues(alpha: 0.78),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.18),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.14),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: imageBytes == null
+                    ? Image.asset(AppConstants.logoAsset)
+                    : Image.memory(
+                        imageBytes,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                      ),
+              ),
+            ),
+            Positioned(
+              right: -2,
+              bottom: 2,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.rose400,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme.colorScheme.surface,
+                    width: 3,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.photo_camera_outlined,
+                  color: Colors.white,
+                  size: 17,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -599,6 +676,144 @@ class _ProfileDivider extends StatelessWidget {
       ).colorScheme.outlineVariant.withValues(alpha: 0.5),
     );
   }
+}
+
+Uint8List? _decodeProfileImage(String? imageBase64) {
+  if (imageBase64 == null || imageBase64.isEmpty) return null;
+  try {
+    return base64Decode(imageBase64);
+  } on FormatException {
+    return null;
+  }
+}
+
+Future<void> _showProfileImageSheet(BuildContext context) {
+  final hasPhoto = AppScope.of(context).profile.profileImageBase64 != null;
+  return showAdaptiveModal<void>(
+    context: context,
+    webMaxWidth: 520,
+    builder: (_) =>
+        _ProfileImageSheet(parentContext: context, hasPhoto: hasPhoto),
+  );
+}
+
+class _ProfileImageSheet extends StatelessWidget {
+  const _ProfileImageSheet({
+    required this.parentContext,
+    required this.hasPhoto,
+  });
+
+  final BuildContext parentContext;
+  final bool hasPhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 22),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Profile photo', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(
+            'Choose a photo for your Profile page.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _ProfileImageOption(
+            icon: Icons.photo_library_outlined,
+            title: 'Choose from gallery',
+            subtitle: 'Pick a saved photo from this device',
+            onTap: () => _pickProfileImage(context, parentContext),
+          ),
+          if (hasPhoto)
+            _ProfileImageOption(
+              icon: Icons.delete_outline,
+              title: 'Remove photo',
+              subtitle: 'Use the Blooom logo again',
+              onTap: () => _removeProfileImage(context, parentContext),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileImageOption extends StatelessWidget {
+  const _ProfileImageOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(child: Icon(icon)),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+}
+
+Future<void> _pickProfileImage(
+  BuildContext sheetContext,
+  BuildContext parentContext,
+) async {
+  final navigator = Navigator.of(sheetContext);
+  final messenger = ScaffoldMessenger.of(parentContext);
+  final picker = ImagePicker();
+  final image = await picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 720,
+    maxHeight: 720,
+    imageQuality: 82,
+  );
+  if (image == null) return;
+
+  final bytes = await image.readAsBytes();
+  if (!parentContext.mounted || !sheetContext.mounted) return;
+  await AppScope.of(parentContext).updateProfile(
+    name: AppScope.of(parentContext).profile.name,
+    birthDate: AppScope.of(parentContext).profile.birthDate,
+    profileImageBase64: base64Encode(bytes),
+  );
+  if (!parentContext.mounted || !sheetContext.mounted) return;
+  navigator.pop();
+  messenger.showSnackBar(
+    const SnackBar(content: Text('Profile photo updated.')),
+  );
+}
+
+Future<void> _removeProfileImage(
+  BuildContext sheetContext,
+  BuildContext parentContext,
+) async {
+  final navigator = Navigator.of(sheetContext);
+  final messenger = ScaffoldMessenger.of(parentContext);
+  final profile = AppScope.of(parentContext).profile;
+  await AppScope.of(parentContext).updateProfile(
+    name: profile.name,
+    birthDate: profile.birthDate,
+    clearProfileImage: true,
+  );
+  if (!parentContext.mounted || !sheetContext.mounted) return;
+  navigator.pop();
+  messenger.showSnackBar(
+    const SnackBar(content: Text('Profile photo removed.')),
+  );
 }
 
 Future<void> _pickPregnancyStartDate(BuildContext context) async {
