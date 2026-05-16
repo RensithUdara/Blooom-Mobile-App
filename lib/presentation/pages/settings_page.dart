@@ -14,207 +14,101 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = AppScope.of(context);
+    final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: vm,
       builder: (context, _) {
-        final profileHero = Center(
-          child: Column(
-            children: [
-              Hero(
-                tag: 'blooom-logo',
-                child: Image.asset(
-                  AppConstants.logoAsset,
-                  width: 92,
-                  height: 92,
-                ),
-              ),
-              Text(
-                vm.profile.name.trim().isEmpty
-                    ? AppConstants.appName
-                    : vm.profile.name,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              Text(
-                vm.profile.birthDate == null
-                    ? AppConstants.tagline
-                    : '${BloomDateUtils.full(vm.profile.birthDate!)}'
-                          '${vm.profile.age == null ? '' : '  |  ${vm.profile.age} years'}',
-              ),
-            ],
-          ),
+        final displayName = vm.profile.name.trim().isEmpty
+            ? AppConstants.appName
+            : vm.profile.name.trim();
+        final profileCaption = vm.profile.birthDate == null
+            ? AppConstants.tagline
+            : '${BloomDateUtils.full(vm.profile.birthDate!)}'
+                  '${vm.profile.age == null ? '' : ' | ${vm.profile.age} years'}';
+        final personalSubtitle =
+            [
+              if (vm.profile.name.trim().isNotEmpty) vm.profile.name.trim(),
+              if (vm.profile.birthDate != null)
+                BloomDateUtils.full(vm.profile.birthDate!),
+            ].isEmpty
+            ? 'Add name and birthday'
+            : [
+                if (vm.profile.name.trim().isNotEmpty) vm.profile.name.trim(),
+                if (vm.profile.birthDate != null)
+                  BloomDateUtils.full(vm.profile.birthDate!),
+              ].join(' | ');
+
+        final profileHero = _ProfileHero(
+          name: displayName,
+          caption: profileCaption,
         );
-        final personalCard = SoftCard(
+        final personalCard = _ProfileActionCard(
+          icon: Icons.badge_outlined,
+          title: 'Personal details',
+          subtitle: personalSubtitle,
+          trailing: Icons.edit_outlined,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.10),
+              theme.colorScheme.surface,
+              AppColors.rose200.withValues(alpha: 0.64),
+              AppColors.rose300.withValues(alpha: 0.42),
             ],
           ),
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.badge_outlined),
-            title: const Text('Personal details'),
-            subtitle: Text(
-              [
-                    if (vm.profile.name.trim().isNotEmpty) vm.profile.name,
-                    if (vm.profile.birthDate != null)
-                      BloomDateUtils.full(vm.profile.birthDate!),
-                  ].isEmpty
-                  ? 'Add name and birthday'
-                  : [
-                      if (vm.profile.name.trim().isNotEmpty) vm.profile.name,
-                      if (vm.profile.birthDate != null)
-                        BloomDateUtils.full(vm.profile.birthDate!),
-                    ].join('  |  '),
-            ),
-            trailing: const Icon(Icons.edit_outlined),
-            onTap: () => _showEditProfileSheet(context),
-          ),
+          onTap: () => _showEditProfileSheet(context),
         );
-        final preferencesCard = SoftCard(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
-            ],
-          ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Dark theme'),
-                subtitle: const Text('Rose night mode for low light'),
-                value: vm.profile.darkMode,
-                onChanged: vm.toggleDarkMode,
-              ),
-              const Divider(),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('In-app notifications'),
-                subtitle: const Text(
-                  'Predicted period reminders on this device',
-                ),
-                value: vm.profile.remindersEnabled,
-                onChanged: vm.toggleReminders,
-              ),
-              const Divider(),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Best conception day suggestions'),
-                subtitle: const Text(
-                  'Show highest-chance intimacy dates from your cycle',
-                ),
-                value: vm.profile.fertilitySuggestionsEnabled,
-                onChanged: vm.toggleFertilitySuggestions,
-              ),
-              const Divider(),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('App lock'),
-                subtitle: Text(
-                  vm.profile.usesPinLock
-                      ? 'PIN is required before opening Blooom'
-                      : vm.profile.usesDeviceLock
-                      ? 'Device lock or biometrics are required'
-                      : 'Add Face ID, fingerprint, device lock, or PIN',
-                ),
-                value: vm.profile.appLockEnabled,
-                onChanged: (enabled) async {
-                  if (enabled) {
-                    await _showAppLockSetupSheet(context);
-                  } else {
-                    await vm.disableAppLock();
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('App lock disabled.')),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
+        final privacyCard = const _PrivacyCard();
+        final pregnancyCard = _PregnancyCard(
+          enabled: vm.profile.pregnancyTrackingEnabled,
+          subtitle: vm.profile.pregnancyTrackingEnabled
+              ? vm.hasPregnancyTrackingDate
+                    ? 'Week ${vm.pregnancyWeek} | Due ${BloomDateUtils.full(vm.estimatedDueDate!)}'
+                    : 'Choose the first day of your last period'
+              : 'Track week, trimester, due date and milestones',
+          startDateText: vm.pregnancyStartDate == null
+              ? 'Choose date'
+              : BloomDateUtils.full(vm.pregnancyStartDate!),
+          trimester: vm.pregnancyTrimester,
+          milestone: vm.pregnancyMilestone,
+          hasTrackingDate: vm.hasPregnancyTrackingDate,
+          onChanged: vm.togglePregnancyTracking,
+          onPickStartDate: () => _pickPregnancyStartDate(context),
         );
-        final pregnancyCard = SoftCard(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.surface,
-              AppColors.mint.withValues(alpha: 0.10),
-              AppColors.sky.withValues(alpha: 0.10),
-            ],
-          ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.child_friendly_outlined),
-                title: const Text('Pregnancy tracking'),
-                subtitle: Text(
-                  vm.profile.pregnancyTrackingEnabled
-                      ? vm.hasPregnancyTrackingDate
-                            ? 'Week ${vm.pregnancyWeek} | Due ${BloomDateUtils.full(vm.estimatedDueDate!)}'
-                            : 'Choose the first day of your last period'
-                      : 'Track week, trimester, due date and milestones',
-                ),
-                value: vm.profile.pregnancyTrackingEnabled,
-                onChanged: vm.togglePregnancyTracking,
-              ),
-              if (vm.profile.pregnancyTrackingEnabled) ...[
-                const Divider(),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.event_outlined),
-                  title: const Text('Last period start date'),
-                  subtitle: Text(
-                    vm.pregnancyStartDate == null
-                        ? 'Choose date'
-                        : BloomDateUtils.full(vm.pregnancyStartDate!),
-                  ),
-                  trailing: const Icon(Icons.edit_calendar_outlined),
-                  onTap: () => _pickPregnancyStartDate(context),
-                ),
-                if (vm.hasPregnancyTrackingDate) ...[
-                  const Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.flag_outlined),
-                    title: Text(vm.pregnancyTrimester),
-                    subtitle: Text(vm.pregnancyMilestone),
-                  ),
-                ],
-              ],
-            ],
-          ),
+        final calendarCard = _ProfileActionCard(
+          icon: Icons.calendar_today_outlined,
+          title: 'Add predicted period to Google Calendar',
+          subtitle: BloomDateUtils.full(vm.nextPeriodStart),
+          trailing: Icons.chevron_right,
+          onTap: () => exportNextPeriodToCalendar(context),
         );
-        final privacyCard = SoftCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Privacy', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              const Text(
-                'Your cycle, mood, symptom, sleep, weight, temperature and intimacy details stay private on this device.',
-              ),
-            ],
-          ),
-        );
-        final calendarCard = SoftCard(
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.calendar_today),
-            title: const Text('Add predicted period to Google Calendar'),
-            subtitle: Text(BloomDateUtils.full(vm.nextPeriodStart)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => exportNextPeriodToCalendar(context),
-          ),
+        final preferencesCard = _PreferencesCard(
+          darkMode: vm.profile.darkMode,
+          remindersEnabled: vm.profile.remindersEnabled,
+          fertilitySuggestionsEnabled: vm.profile.fertilitySuggestionsEnabled,
+          appLockEnabled: vm.profile.appLockEnabled,
+          appLockSubtitle: vm.profile.usesPinLock
+              ? 'PIN is required before opening Blooom'
+              : vm.profile.usesDeviceLock
+              ? 'Device lock or biometrics are required'
+              : 'Add Face ID, fingerprint, device lock, or PIN',
+          onDarkModeChanged: vm.toggleDarkMode,
+          onRemindersChanged: vm.toggleReminders,
+          onFertilityChanged: vm.toggleFertilitySuggestions,
+          onAppLockChanged: (enabled) async {
+            if (enabled) {
+              await _showAppLockSetupSheet(context);
+            } else {
+              await vm.disableAppLock();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('App lock disabled.')),
+              );
+            }
+          },
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+          padding: const EdgeInsets.fromLTRB(22, 20, 22, 32),
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
@@ -277,6 +171,431 @@ class SettingsPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _ProfileHero extends StatelessWidget {
+  const _ProfileHero({required this.name, required this.caption});
+
+  final String name;
+  final String caption;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        children: [
+          Hero(
+            tag: 'blooom-logo',
+            child: Container(
+              width: 86,
+              height: 86,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: Image.asset(AppConstants.logoAsset),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              height: 1.05,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            caption,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileActionCard extends StatelessWidget {
+  const _ProfileActionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    this.gradient,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final IconData trailing;
+  final Gradient? gradient;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      gradient: gradient,
+      child: _ProfileSettingRow(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        trailing: Icon(trailing),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _PrivacyCard extends StatelessWidget {
+  const _PrivacyCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(16, 17, 16, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Privacy',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 9),
+          Text(
+            'Your cycle, mood, symptom, sleep, weight, temperature and intimacy details stay private on this device.',
+            style: theme.textTheme.bodyMedium?.copyWith(height: 1.34),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PregnancyCard extends StatelessWidget {
+  const _PregnancyCard({
+    required this.enabled,
+    required this.subtitle,
+    required this.startDateText,
+    required this.trimester,
+    required this.milestone,
+    required this.hasTrackingDate,
+    required this.onChanged,
+    required this.onPickStartDate,
+  });
+
+  final bool enabled;
+  final String subtitle;
+  final String startDateText;
+  final String trimester;
+  final String milestone;
+  final bool hasTrackingDate;
+  final ValueChanged<bool> onChanged;
+  final VoidCallback onPickStartDate;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.mint.withValues(alpha: 0.26),
+          Theme.of(context).colorScheme.surface.withValues(alpha: 0.56),
+          AppColors.rose200.withValues(alpha: 0.36),
+        ],
+      ),
+      child: Column(
+        children: [
+          _ProfileSettingRow(
+            icon: Icons.child_friendly_outlined,
+            title: 'Pregnancy tracking',
+            subtitle: subtitle,
+            trailing: _ProfileSwitch(value: enabled, onChanged: onChanged),
+          ),
+          if (enabled) ...[
+            const _ProfileDivider(),
+            _ProfileSettingRow(
+              icon: Icons.event_outlined,
+              title: 'Last period start date',
+              subtitle: startDateText,
+              trailing: const Icon(Icons.edit_calendar_outlined),
+              onTap: onPickStartDate,
+            ),
+            if (hasTrackingDate) ...[
+              const _ProfileDivider(),
+              _ProfileSettingRow(
+                icon: Icons.flag_outlined,
+                title: trimester,
+                subtitle: milestone,
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PreferencesCard extends StatelessWidget {
+  const _PreferencesCard({
+    required this.darkMode,
+    required this.remindersEnabled,
+    required this.fertilitySuggestionsEnabled,
+    required this.appLockEnabled,
+    required this.appLockSubtitle,
+    required this.onDarkModeChanged,
+    required this.onRemindersChanged,
+    required this.onFertilityChanged,
+    required this.onAppLockChanged,
+  });
+
+  final bool darkMode;
+  final bool remindersEnabled;
+  final bool fertilitySuggestionsEnabled;
+  final bool appLockEnabled;
+  final String appLockSubtitle;
+  final ValueChanged<bool> onDarkModeChanged;
+  final ValueChanged<bool> onRemindersChanged;
+  final ValueChanged<bool> onFertilityChanged;
+  final ValueChanged<bool> onAppLockChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.rose50.withValues(alpha: 0.88),
+          AppColors.lavender.withValues(alpha: 0.30),
+          AppColors.rose200.withValues(alpha: 0.30),
+        ],
+      ),
+      child: Column(
+        children: [
+          _PreferenceSwitchRow(
+            title: 'Dark theme',
+            subtitle: 'Rose night mode for low light',
+            value: darkMode,
+            onChanged: onDarkModeChanged,
+          ),
+          const _ProfileDivider(),
+          _PreferenceSwitchRow(
+            title: 'In-app notifications',
+            subtitle: 'Predicted period reminders on this device',
+            value: remindersEnabled,
+            onChanged: onRemindersChanged,
+          ),
+          const _ProfileDivider(),
+          _PreferenceSwitchRow(
+            title: 'Best conception day suggestions',
+            subtitle: 'Show highest-chance intimacy dates from your cycle',
+            value: fertilitySuggestionsEnabled,
+            onChanged: onFertilityChanged,
+          ),
+          const _ProfileDivider(),
+          _PreferenceSwitchRow(
+            title: 'App lock',
+            subtitle: appLockSubtitle,
+            value: appLockEnabled,
+            onChanged: onAppLockChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileSettingRow extends StatelessWidget {
+  const _ProfileSettingRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 28,
+          child: Icon(
+            icon,
+            size: 22,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.72),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.24,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: 12),
+          IconTheme(
+            data: IconThemeData(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.78),
+              size: 23,
+            ),
+            child: trailing!,
+          ),
+        ],
+      ],
+    );
+
+    if (onTap == null) return content;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: content,
+      ),
+    );
+  }
+}
+
+class _PreferenceSwitchRow extends StatelessWidget {
+  const _PreferenceSwitchRow({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          _ProfileSwitch(value: value, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileSwitch extends StatelessWidget {
+  const _ProfileSwitch({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Switch(
+      value: value,
+      onChanged: onChanged,
+      activeThumbColor: Colors.white,
+      activeTrackColor: AppColors.rose400,
+      inactiveThumbColor: scheme.onSurfaceVariant.withValues(alpha: 0.72),
+      inactiveTrackColor: scheme.surface.withValues(alpha: 0.72),
+      trackOutlineColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected)
+            ? Colors.transparent
+            : scheme.onSurfaceVariant.withValues(alpha: 0.62),
+      ),
+    );
+  }
+}
+
+class _ProfileDivider extends StatelessWidget {
+  const _ProfileDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 24,
+      color: Theme.of(
+        context,
+      ).colorScheme.outlineVariant.withValues(alpha: 0.5),
     );
   }
 }
