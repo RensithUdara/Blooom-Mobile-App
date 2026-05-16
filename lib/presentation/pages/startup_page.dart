@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/bloom_app_bar.dart';
 import '../widgets/common/gradient_background.dart';
 import 'home_shell_page.dart';
 import 'onboarding_page.dart';
@@ -304,7 +305,13 @@ class _DeviceLockPageState extends State<DeviceLockPage> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: const BloomAppBar(
+          title: AppConstants.appName,
+          subtitle: 'Private health space',
+          showLogo: true,
+        ),
         body: SafeArea(
+          top: false,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
@@ -390,7 +397,13 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: const BloomAppBar(
+          title: AppConstants.appName,
+          subtitle: 'Private health space',
+          showLogo: true,
+        ),
         body: SafeArea(
+          top: false,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
