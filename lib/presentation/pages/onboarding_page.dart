@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/bloom_app_bar.dart';
 import '../widgets/common/gradient_background.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -47,33 +48,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: BloomAppBar(
+          title: AppConstants.appName,
+          subtitle: AppConstants.tagline,
+          showLogo: true,
+          actions: [TextButton(onPressed: _finish, child: const Text('Skip'))],
+        ),
         body: SafeArea(
+          top: false,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 24),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Image.asset(
-                          AppConstants.logoAsset,
-                          width: 44,
-                          height: 44,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          AppConstants.appName,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: _finish,
-                          child: const Text('Skip'),
-                        ),
-                      ],
-                    ),
                     Expanded(
                       child: PageView.builder(
                         controller: _controller,
