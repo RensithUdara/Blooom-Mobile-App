@@ -158,13 +158,8 @@ class InsightsPage extends StatelessWidget {
           ],
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 32),
           children: [
-            const SectionHeader(
-              title: 'Insights',
-              subtitle: 'Charts become richer as you log real data',
-            ),
-            const SizedBox(height: 14),
             LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth < 900) {
