@@ -85,6 +85,82 @@ class AppViewModel extends ChangeNotifier {
 
   DateTime get fertileEnd => ovulationDate.add(const Duration(days: 1));
 
+  DateTime get bestConceptionDay => ovulationDate;
+
+  DateTime get intimacyWindowStart =>
+      ovulationDate.subtract(const Duration(days: 2));
+
+  DateTime get intimacyWindowEnd => ovulationDate;
+
+  String get fertilitySuggestion {
+    return 'Highest chance is around ${BloomDateUtils.full(bestConceptionDay)}, '
+        'with a strong window from ${BloomDateUtils.dayMonth(intimacyWindowStart)} '
+        'to ${BloomDateUtils.dayMonth(intimacyWindowEnd)}.';
+  }
+
+  DateTime? get pregnancyStartDate {
+    return profile.pregnancyStartDate ?? latestPeriod?.startDate;
+  }
+
+  bool get hasPregnancyTrackingDate =>
+      profile.pregnancyTrackingEnabled && pregnancyStartDate != null;
+
+  DateTime? get estimatedDueDate {
+    final start = pregnancyStartDate;
+    if (!profile.pregnancyTrackingEnabled || start == null) return null;
+    return start.add(const Duration(days: 280));
+  }
+
+  int? get pregnancyDay {
+    final start = pregnancyStartDate;
+    if (!profile.pregnancyTrackingEnabled || start == null) return null;
+    return math.max(
+      0,
+      BloomDateUtils.dateOnly(
+        DateTime.now(),
+      ).difference(BloomDateUtils.dateOnly(start)).inDays,
+    );
+  }
+
+  int? get pregnancyWeek {
+    final day = pregnancyDay;
+    if (day == null) return null;
+    return ((day / 7).floor() + 1).clamp(1, 42).toInt();
+  }
+
+  int? get daysUntilDueDate {
+    final due = estimatedDueDate;
+    if (due == null) return null;
+    return math.max(
+      0,
+      BloomDateUtils.dateOnly(
+        due,
+      ).difference(BloomDateUtils.dateOnly(DateTime.now())).inDays,
+    );
+  }
+
+  String get pregnancyTrimester {
+    final week = pregnancyWeek;
+    if (week == null) return 'Not started';
+    if (week < 14) return 'First trimester';
+    if (week < 28) return 'Second trimester';
+    return 'Third trimester';
+  }
+
+  String get pregnancyMilestone {
+    final week = pregnancyWeek;
+    if (week == null) {
+      return 'Turn on tracking and choose the first day of your last period.';
+    }
+    if (week <= 4) return 'Early signs may begin around this time.';
+    if (week <= 8) return 'A first prenatal visit is commonly planned soon.';
+    if (week <= 12) return 'Early screening conversations often happen now.';
+    if (week <= 20) return 'The anatomy scan window is getting close.';
+    if (week <= 28) return 'Movement patterns may become easier to notice.';
+    if (week <= 36) return 'Birth planning and hospital bag prep fit here.';
+    return 'You are in the final stretch near the estimated due date.';
+  }
+
   int get daysUntilNextPeriod {
     return math.max(
       0,
@@ -287,6 +363,37 @@ class AppViewModel extends ChangeNotifier {
     profile = profile.copyWith(remindersEnabled: enabled);
     await _repository.saveProfile(profile);
     await _syncReminders();
+    notifyListeners();
+  }
+
+  Future<void> toggleFertilitySuggestions(bool enabled) async {
+    profile = profile.copyWith(fertilitySuggestionsEnabled: enabled);
+    await _repository.saveProfile(profile);
+    notifyListeners();
+  }
+
+  Future<void> togglePregnancyTracking(bool enabled) async {
+    final startDate = profile.pregnancyStartDate ?? latestPeriod?.startDate;
+    profile = profile.copyWith(
+      pregnancyTrackingEnabled: enabled,
+      pregnancyStartDate: enabled && startDate != null
+          ? BloomDateUtils.dateOnly(startDate)
+          : null,
+      clearPregnancyStartDate: !enabled,
+    );
+    await _repository.saveProfile(profile);
+    notifyListeners();
+  }
+
+  Future<void> updatePregnancyStartDate(DateTime? startDate) async {
+    profile = profile.copyWith(
+      pregnancyTrackingEnabled: startDate != null,
+      pregnancyStartDate: startDate == null
+          ? null
+          : BloomDateUtils.dateOnly(startDate),
+      clearPregnancyStartDate: startDate == null,
+    );
+    await _repository.saveProfile(profile);
     notifyListeners();
   }
 
