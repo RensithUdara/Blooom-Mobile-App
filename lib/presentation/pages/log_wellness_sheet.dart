@@ -69,17 +69,6 @@ class _LogWellnessSheetState extends State<_LogWellnessSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
           Text('Daily wellness', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
           Text('Mood', style: Theme.of(context).textTheme.titleSmall),
