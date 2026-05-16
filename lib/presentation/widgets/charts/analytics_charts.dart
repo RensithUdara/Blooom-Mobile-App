@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../common/animated_content.dart';
 import '../../viewmodels/app_view_model.dart';
 
 class CycleLengthBarChart extends StatelessWidget {
@@ -172,6 +171,33 @@ class _EmptyChartMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmptyState(icon: icon, title: 'Waiting for data', message: message);
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(icon, color: theme.colorScheme.primary),
+          ),
+          const SizedBox(height: 10),
+          Text('Waiting for data', style: theme.textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.25,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
