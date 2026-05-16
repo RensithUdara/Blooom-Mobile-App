@@ -104,6 +104,16 @@ class SettingsPage extends StatelessWidget {
               const Divider(),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
+                title: const Text('Best conception day suggestions'),
+                subtitle: const Text(
+                  'Show highest-chance intimacy dates from your cycle',
+                ),
+                value: vm.profile.fertilitySuggestionsEnabled,
+                onChanged: vm.toggleFertilitySuggestions,
+              ),
+              const Divider(),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
                 title: const Text('App lock'),
                 subtitle: Text(
                   vm.profile.usesPinLock
@@ -125,6 +135,59 @@ class SettingsPage extends StatelessWidget {
                   }
                 },
               ),
+            ],
+          ),
+        );
+        final pregnancyCard = SoftCard(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              AppColors.mint.withValues(alpha: 0.10),
+              AppColors.sky.withValues(alpha: 0.10),
+            ],
+          ),
+          child: Column(
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.child_friendly_outlined),
+                title: const Text('Pregnancy tracking'),
+                subtitle: Text(
+                  vm.profile.pregnancyTrackingEnabled
+                      ? vm.hasPregnancyTrackingDate
+                            ? 'Week ${vm.pregnancyWeek} | Due ${BloomDateUtils.full(vm.estimatedDueDate!)}'
+                            : 'Choose the first day of your last period'
+                      : 'Track week, trimester, due date and milestones',
+                ),
+                value: vm.profile.pregnancyTrackingEnabled,
+                onChanged: vm.togglePregnancyTracking,
+              ),
+              if (vm.profile.pregnancyTrackingEnabled) ...[
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.event_outlined),
+                  title: const Text('Last period start date'),
+                  subtitle: Text(
+                    vm.pregnancyStartDate == null
+                        ? 'Choose date'
+                        : BloomDateUtils.full(vm.pregnancyStartDate!),
+                  ),
+                  trailing: const Icon(Icons.edit_calendar_outlined),
+                  onTap: () => _pickPregnancyStartDate(context),
+                ),
+                if (vm.hasPregnancyTrackingDate) ...[
+                  const Divider(),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.flag_outlined),
+                    title: Text(vm.pregnancyTrimester),
+                    subtitle: Text(vm.pregnancyMilestone),
+                  ),
+                ],
+              ],
             ],
           ),
         );
@@ -160,6 +223,8 @@ class SettingsPage extends StatelessWidget {
                     personalCard,
                     const SizedBox(height: 14),
                     privacyCard,
+                    const SizedBox(height: 14),
+                    pregnancyCard,
                     const SizedBox(height: 14),
                     calendarCard,
                   ],
@@ -199,6 +264,8 @@ class SettingsPage extends StatelessWidget {
                           const SizedBox(height: 14),
                           preferencesCard,
                           const SizedBox(height: 14),
+                          pregnancyCard,
+                          const SizedBox(height: 14),
                           calendarCard,
                         ],
                       ),
@@ -211,6 +278,24 @@ class SettingsPage extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+Future<void> _pickPregnancyStartDate(BuildContext context) async {
+  final vm = AppScope.of(context);
+  final today = DateTime.now();
+  final initialDate =
+      vm.pregnancyStartDate ??
+      vm.latestPeriod?.startDate ??
+      today.subtract(const Duration(days: 28));
+  final selected = await showDatePicker(
+    context: context,
+    initialDate: initialDate.isAfter(today) ? today : initialDate,
+    firstDate: today.subtract(const Duration(days: 294)),
+    lastDate: today,
+  );
+  if (selected != null) {
+    await vm.updatePregnancyStartDate(selected);
   }
 }
 
@@ -463,17 +548,6 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
           Text(
             'Personal details',
             style: Theme.of(context).textTheme.titleLarge,
