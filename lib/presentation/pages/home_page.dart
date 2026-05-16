@@ -199,47 +199,8 @@ class HomePage extends StatelessWidget {
           ),
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 32),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 32),
           children: [
-            Row(
-              children: [
-                Hero(
-                  tag: 'blooom-logo',
-                  child: Image.asset(
-                    AppConstants.logoAsset,
-                    width: 52,
-                    height: 52,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        vm.profile.name.trim().isEmpty
-                            ? 'Welcome to Blooom'
-                            : 'Hi, ${vm.profile.name}',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      Text(
-                        'How do you feel today?',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton.filledTonal(
-                  onPressed: () => vm.toggleDarkMode(!vm.profile.darkMode),
-                  icon: Icon(
-                    vm.profile.darkMode ? Icons.light_mode : Icons.dark_mode,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
             LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth < 900) {

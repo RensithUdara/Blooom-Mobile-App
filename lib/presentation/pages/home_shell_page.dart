@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../viewmodels/app_scope.dart';
+import '../widgets/common/bloom_app_bar.dart';
+import '../widgets/common/calendar_export.dart';
 import '../widgets/common/gradient_background.dart';
 import 'calendar_page.dart';
 import 'home_page.dart';
 import 'insights_page.dart';
+import 'log_period_sheet.dart';
+import 'log_wellness_sheet.dart';
 import 'logs_page.dart';
 import 'settings_page.dart';
 
@@ -43,7 +47,14 @@ class _HomeShellPageState extends State<HomeShellPage> {
             return GradientBackground(
               child: Scaffold(
                 backgroundColor: Colors.transparent,
+                appBar: vm.isLoading
+                    ? null
+                    : _ShellAppBar(
+                        selectedTab: vm.selectedTab,
+                        showLogo: !isWide,
+                      ),
                 body: SafeArea(
+                  top: false,
                   child: vm.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : isWide
@@ -114,6 +125,95 @@ class _HomeShellPageState extends State<HomeShellPage> {
     if (index == vm.selectedTab) return;
     setState(() => _previousTab = vm.selectedTab);
     vm.setTab(index);
+  }
+}
+
+class _ShellAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _ShellAppBar({required this.selectedTab, required this.showLogo});
+
+  final int selectedTab;
+  final bool showLogo;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(82);
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = AppScope.of(context);
+    final isHome = selectedTab == 0;
+    return BloomAppBar(
+      title: _title(vm, selectedTab),
+      subtitle: _subtitle(selectedTab),
+      showLogo: showLogo || isHome,
+      actions: _actions(context, vm, selectedTab),
+    );
+  }
+
+  String _title(dynamic vm, int tab) {
+    return switch (tab) {
+      0 =>
+        vm.profile.name.trim().isEmpty
+            ? 'Welcome to ${AppConstants.appName}'
+            : 'Hi, ${vm.profile.name}',
+      1 => 'Calendar',
+      2 => 'Insights',
+      3 => 'Logs',
+      _ => 'Profile',
+    };
+  }
+
+  String _subtitle(int tab) {
+    return switch (tab) {
+      0 => 'How do you feel today?',
+      1 => 'Predictions, fertile window and ovulation',
+      2 => 'Patterns from your cycle and wellness logs',
+      3 => 'Capture cycle and wellness signals',
+      _ => 'Preferences, privacy and app lock',
+    };
+  }
+
+  List<Widget> _actions(BuildContext context, dynamic vm, int tab) {
+    return switch (tab) {
+      0 => [
+        IconButton.filledTonal(
+          tooltip: vm.profile.darkMode ? 'Use light theme' : 'Use dark theme',
+          onPressed: () => vm.toggleDarkMode(!vm.profile.darkMode),
+          icon: Icon(vm.profile.darkMode ? Icons.light_mode : Icons.dark_mode),
+        ),
+      ],
+      1 => [
+        IconButton.filledTonal(
+          tooltip: 'Add prediction to calendar',
+          onPressed: () => exportNextPeriodToCalendar(context),
+          icon: const Icon(Icons.calendar_today),
+        ),
+        IconButton.filledTonal(
+          tooltip: 'Add period date',
+          onPressed: () => showLogPeriodSheet(context),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+      2 => const [],
+      3 => [
+        IconButton.filledTonal(
+          tooltip: 'Log wellness',
+          onPressed: () => showLogWellnessSheet(context),
+          icon: const Icon(Icons.spa),
+        ),
+        IconButton.filledTonal(
+          tooltip: 'Log period',
+          onPressed: () => showLogPeriodSheet(context),
+          icon: const Icon(Icons.water_drop),
+        ),
+      ],
+      _ => [
+        IconButton.filledTonal(
+          tooltip: vm.profile.darkMode ? 'Use light theme' : 'Use dark theme',
+          onPressed: () => vm.toggleDarkMode(!vm.profile.darkMode),
+          icon: Icon(vm.profile.darkMode ? Icons.light_mode : Icons.dark_mode),
+        ),
+      ],
+    };
   }
 }
 

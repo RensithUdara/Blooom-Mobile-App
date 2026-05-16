@@ -83,13 +83,8 @@ class CalendarPage extends StatelessWidget {
           ],
         );
         return AnimatedPageList(
-          padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           children: [
-            const SectionHeader(
-              title: 'Calendar',
-              subtitle: 'Period, fertile window and ovulation predictions',
-            ),
-            const SizedBox(height: 14),
             LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth < 900) {
